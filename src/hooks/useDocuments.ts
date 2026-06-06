@@ -105,19 +105,46 @@ export function useDocuments(caseId: string) {
     }
   }
 
-  const requestSummary = async (docId: string): Promise<void> => {
-    try {
-      await supabase.from('documents').update({ summary_status: 'processing' }).eq('id', docId)
-      await fetch('/api/summarise', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ documentId: docId, caseId }),
-      })
-      await fetchDocuments()
-    } catch (err: any) {
-      setError(err.message ?? 'Summary request failed')
+ const requestSummary = async (docId: string): Promise<void> => {
+  try {
+    const doc = documents.find(d => d.id === docId)
+    if (!doc) return
+
+    await supabase.from('documents').update({ summary_status: 'processing' }).eq('id', docId)
+
+    const fileRes = await fetch(doc.file_url)
+    let text = ''
+
+    if (doc.file_type === 'txt') {
+      text = await fileRes.text()
+    } else if (doc.file_type === 'pdf') {
+      const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist')
+      GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js`
+      const buffer = await fileRes.arrayBuffer()
+      const pdf = await getDocument({ data: buffer }).promise
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i)
+        const content = await page.getTextContent()
+        text += content.items.map((item: any) => ('str' in item ? item.str : '')).join(' ')
+      }
+    } else if (doc.file_type === 'doc' || doc.file_type === 'docx') {
+      const { default: mammoth } = await import('mammoth')
+      const buffer = await fileRes.arrayBuffer()
+      const result = await mammoth.extractRawText({ arrayBuffer: buffer })
+      text = result.value
     }
+
+    await fetch('/api/summarise', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ documentId: docId, caseId, text }),
+    })
+
+    await fetchDocuments()
+  } catch (err: any) {
+    setError(err.message ?? 'Summary request failed')
   }
+}
 
   return { documents, loading, uploading, error, fetchDocuments, uploadDocument, deleteDocument, requestSummary }
 }
