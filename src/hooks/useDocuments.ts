@@ -119,7 +119,7 @@ export function useDocuments(caseId: string) {
       text = await fileRes.text()
     } else if (doc.file_type === 'pdf') {
       const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist')
-      GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js`
+      GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
       const buffer = await fileRes.arrayBuffer()
       const pdf = await getDocument({ data: buffer }).promise
       for (let i = 1; i <= pdf.numPages; i++) {
