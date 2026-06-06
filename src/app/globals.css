@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #1B2B4B;
+  --navy-light: #243659;
+  --navy-muted: #2E4270;
+  --gold: #C9A84C;
+  --gold-light: #E8C96A;
+  --warm-white: #F9F7F4;
+  --warm-white-2: #F0EDE8;
+  --text-primary: #1A1A1A;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --border: #E5E1DB;
+  --status-active: #2D6A4F;
+  --status-active-bg: #D8F3DC;
+  --status-pending: #7B5E00;
+  --status-pending-bg: #FFF3CD;
+  --status-urgent: #9B1C1C;
+  --status-urgent-bg: #FEE2E2;
+  --status-closed: #4B5563;
+  --status-closed-bg: #F3F4F6;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-inter), sans-serif;
+  background: var(--warm-white);
+  color: var(--text-primary);
+}
+
+.font-baskerville { font-family: var(--font-baskerville), serif; }
+.font-inter { font-family: var(--font-inter), sans-serif; }
+
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
+
+.focus-navy:focus { border-color: var(--navy) !important; outline: none; }
+.hover-navy:hover { border-color: var(--navy) !important; }
