@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const { data: docs } = await supabase.from('documents').select('*').eq('case_id', caseId).eq('summary_status', 'done')
 
     const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-    const divider = '─'.repeat(60)
+    const divider = '\n'
 
     let content = `LEGAL MATTER EXPORT\n\n`
     content += `Matter: ${caseData?.title ?? ''}\n`
