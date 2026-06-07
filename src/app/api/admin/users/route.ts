@@ -9,9 +9,9 @@ const ADMIN_EMAILS = [
 
 async function requireAdmin() {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session || !ADMIN_EMAILS.includes(session.user.email?.toLowerCase() ?? '')) return null
-  return session
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || !ADMIN_EMAILS.includes(user.email?.toLowerCase() ?? '')) return null
+  return user
 }
 
 export async function GET() {
