@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import type { Case } from '@/types'
 import StatusBadge from '@/components/cases/StatusBadge'
 import SupportButton from '@/components/ui/SupportButton'
+import { useUser } from '@/hooks/useUser'
 
 interface Props {
   cases: Case[]
@@ -14,6 +15,7 @@ interface Props {
 
 export default function Sidebar({ cases, onNewCase, activeCaseId }: Props) {
   const [collapsed, setCollapsed] = useState(false)
+  const { signOut } = useUser()
   const pathname = usePathname()
   const activeCases = cases.filter(c => c.status !== 'Closed').slice(0, 8)
 
@@ -91,6 +93,12 @@ export default function Sidebar({ cases, onNewCase, activeCaseId }: Props) {
         {/* Footer */}
         <div className="px-5 py-4 border-t" style={{ borderColor: 'var(--navy-muted)' }}>
           <SupportButton />
+<button
+  onClick={signOut}
+  className="text-xs mb-2 w-full text-left transition-colors"
+  style={{ color: 'rgba(255,255,255,0.4)', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+  Sign out
+</button>
           <p className="text-center" style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.06em' }}>
             Assumpta · Joseph
           </p>
