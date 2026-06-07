@@ -112,7 +112,12 @@ export function useDocuments(caseId: string) {
 
     await supabase.from('documents').update({ summary_status: 'processing' }).eq('id', docId)
 
-    const fileRes = await fetch(doc.file_url)
+    const { data: signedData } = await supabase.storage
+  .from('documents')
+  .createSignedUrl(new URL(doc.file_url).pathname.split('/documents/')[1], 60)
+
+if (!signedData?.signedUrl) throw new Error('Could not access file')
+const fileRes = await fetch(signedData.signedUrl)
     let text = ''
 
     if (doc.file_type === 'txt') {
