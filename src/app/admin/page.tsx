@@ -7,11 +7,16 @@ export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetch('/api/admin/users').then(r => r.json()).then(data => {
+ useEffect(() => {
+    const load = async () => {
+      const res = await fetch('/api/admin/users')
+      const data = await res.json()
       setUsers(data ?? [])
       setLoading(false)
-    })
+    }
+    load()
+    const interval = setInterval(load, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const trialDaysLeft = (u: User) => {
