@@ -114,7 +114,7 @@ export function useDocuments(caseId: string) {
 
     const { data: signedData } = await supabase.storage
   .from('documents')
-  .createSignedUrl(new URL(doc.file_url).pathname.split('/documents/')[1], 60)
+  .createSignedUrl(new URL(doc.file_url).pathname.split('/documents/')[1], 300)
 
 if (!signedData?.signedUrl) throw new Error('Could not access file')
 const fileRes = await fetch(signedData.signedUrl)
