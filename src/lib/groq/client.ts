@@ -61,7 +61,7 @@ export async function summariseDocument(
   const response = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     temperature: 0,
-    max_tokens: 4000,
+    max_tokens: 2000,
     messages: [
       { role: 'system', content: DOCUMENT_SUMMARY_PROMPT },
       {
@@ -82,7 +82,7 @@ export async function chatWithCase(
   const response = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     temperature: 0,
-    max_tokens: 3000,
+    max_tokens: 1500,
     messages: [
       {
         role: 'system',
