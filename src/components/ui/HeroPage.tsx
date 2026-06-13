@@ -3,68 +3,31 @@ import { createClient } from '@/lib/supabase/client'
 
 function LegalSVG() {
   return (
-    <svg viewBox="0 0 480 560" fill="none" xmlns="http://www.w3.org/2000/svg"
-      style={{ width: '100%', maxWidth: '420px', height: 'auto' }}>
-
-      {/* Architectural arch — courthouse suggestion */}
-      <path d="M 100 480 L 100 220 Q 100 120 240 120 Q 380 120 380 220 L 380 480"
-        stroke="rgba(255,255,255,0.06)" strokeWidth="1" fill="none" />
-      <path d="M 130 480 L 130 230 Q 130 150 240 150 Q 350 150 350 230 L 350 480"
-        stroke="rgba(255,255,255,0.04)" strokeWidth="1" fill="none" />
-
-      {/* Primary document stack — back */}
-      <rect x="90" y="180" width="260" height="340" rx="4"
-        fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-
-      {/* Document 2 */}
-      <rect x="100" y="170" width="260" height="340" rx="4"
-        fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-
-      {/* Primary document — front */}
-      <rect x="112" y="158" width="260" height="340" rx="4"
-        fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" strokeWidth="1" />
-
-      {/* Burgundy top accent on primary doc */}
-      <rect x="112" y="158" width="260" height="4" rx="2" fill="#8B1A2F" />
-
-      {/* Document header lines */}
-      <rect x="136" y="182" width="120" height="2" rx="1" fill="rgba(255,255,255,0.35)" />
-      <rect x="136" y="192" width="80" height="1.5" rx="1" fill="rgba(255,255,255,0.15)" />
-
-      {/* Divider */}
-      <rect x="136" y="206" width="212" height="0.75" fill="rgba(255,255,255,0.1)" />
-
-      {/* Section heading */}
-      <rect x="136" y="220" width="96" height="1.5" rx="1" fill="rgba(139,26,47,0.7)" />
-
-      {/* Content lines — variable width for realism */}
-      <rect x="136" y="234" width="212" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-      <rect x="136" y="244" width="196" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-      <rect x="136" y="254" width="204" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-      <rect x="136" y="264" width="180" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-
-      {/* Section heading 2 */}
-      <rect x="136" y="282" width="80" height="1.5" rx="1" fill="rgba(139,26,47,0.7)" />
-
-      <rect x="136" y="296" width="212" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-      <rect x="136" y="306" width="188" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-      <rect x="136" y="316" width="200" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-      <rect x="136" y="326" width="172" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-      <rect x="136" y="336" width="210" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-
-      {/* Section heading 3 */}
-      <rect x="136" y="354" width="110" height="1.5" rx="1" fill="rgba(139,26,47,0.7)" />
-
-      <rect x="136" y="368" width="212" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-      <rect x="136" y="378" width="192" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-      <rect x="136" y="388" width="206" height="1.5" rx="1" fill="rgba(255,255,255,0.12)" />
-
-      {/* Footer line on document */}
-      <rect x="136" y="468" width="212" height="0.75" fill="rgba(255,255,255,0.08)" />
-      <rect x="136" y="478" width="140" height="1" rx="0.5" fill="rgba(255,255,255,0.08)" />
-
-      {/* Subtle vertical rule — left margin of document */}
-      <rect x="128" y="168" width="1" height="320" fill="rgba(139,26,47,0.2)" />
+    <svg viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg"
+      style={{ width: '100%', maxWidth: '380px', height: 'auto' }}>
+      <rect x="60" y="60" width="280" height="380" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" strokeWidth="1"/>
+      <rect x="60" y="60" width="280" height="6" rx="2" fill="#8B1A2F"/>
+      <rect x="88" y="90" width="140" height="3" rx="1" fill="rgba(255,255,255,0.6)"/>
+      <rect x="88" y="102" width="100" height="2" rx="1" fill="rgba(255,255,255,0.25)"/>
+      <rect x="88" y="120" width="224" height="1" fill="rgba(255,255,255,0.08)"/>
+      <rect x="88" y="136" width="90" height="2" rx="1" fill="#8B1A2F" fillOpacity="0.8"/>
+      <rect x="88" y="150" width="224" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="160" width="200" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="170" width="215" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="180" width="185" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="200" width="80" height="2" rx="1" fill="#8B1A2F" fillOpacity="0.8"/>
+      <rect x="88" y="214" width="224" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="224" width="190" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="234" width="210" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="244" width="175" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="254" width="205" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="274" width="110" height="2" rx="1" fill="#8B1A2F" fillOpacity="0.8"/>
+      <rect x="88" y="288" width="224" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="298" width="195" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="308" width="208" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+      <rect x="88" y="390" width="224" height="1" fill="rgba(255,255,255,0.08)"/>
+      <rect x="88" y="400" width="130" height="1.5" rx="0.5" fill="rgba(255,255,255,0.1)"/>
+      <rect x="80" y="68" width="1.5" height="364" fill="#8B1A2F" fillOpacity="0.3"/>
     </svg>
   )
 }
