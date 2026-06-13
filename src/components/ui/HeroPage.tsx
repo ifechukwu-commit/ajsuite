@@ -126,7 +126,7 @@ export default function HeroPage() {
             {[
               'AI legal review memoranda from uploaded documents',
               'Full case history, deadlines, and client records',
-              'Chat with your case file — ask anything',
+              'Chat with your case file - ask anything',
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="w-1 h-1 rounded-full mt-2 flex-shrink-0" style={{ background: '#8B1A2F' }} />
