@@ -71,7 +71,7 @@ export default function CasePage() {
       const [{ data: tl }, { data: dl }, { data: notif }] = await Promise.all([
         supabase.from('timeline_events').select('*').eq('case_id', caseId).order('created_at', { ascending: false }),
         supabase.from('deadlines').select('*').eq('case_id', caseId),
-        supabase.from('notifications').select('id').eq('is_read', false),
+        supabase.from('notifications').select('id').eq('is_read', false).eq('user_id', (await supabase.auth.getUser()).data.user?.id ?? ''),
       ])
       setTimeline(tl ?? [])
       setDeadlines(dl ?? [])

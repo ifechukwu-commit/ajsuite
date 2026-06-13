@@ -11,13 +11,39 @@ export async function POST(request: Request) {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
 
-    // Get all document summaries for context
+    // Get all documents — summaries AND raw text for page-specific queries
     const { data: docs } = await supabase
-      .from('documents').select('file_name, summary').eq('case_id', caseId).eq('summary_status', 'done')
+      .from('documents')
+      .select('file_name, summary, raw_text, summary_status')
+      .eq('case_id', caseId)
 
-    const documentContext = docs && docs.length > 0
-      ? docs.map(d => `DOCUMENT: ${d.file_name}\n\n${d.summary}`).join('\n\n---\n\n')
-      : 'No documents have been reviewed for this case yet.'
+    // Detect page/line reference in message e.g. "page 3", "page 12 line 4"
+    const pageMatch = message.match(/page\s+(\d+)/i)
+    const requestedPage = pageMatch ? parseInt(pageMatch[1]) : null
+
+    let documentContext = 'No documents have been reviewed for this case yet.'
+
+    if (docs && docs.length > 0) {
+      if (requestedPage) {
+        // User asked about a specific page — use raw text, extract relevant chunk
+        const rawContextParts = docs
+          .filter(d => d.raw_text)
+          .map(d => {
+            const pages = d.raw_text.split(/\f|\[PAGE\s*\d+\]/i)
+            const pageContent = pages[requestedPage - 1] ?? pages[pages.length - 1] ?? ''
+            return `DOCUMENT: ${d.file_name}\nPAGE ${requestedPage} CONTENT:\n${pageContent.slice(0, 3000)}`
+          })
+        documentContext = rawContextParts.length > 0
+          ? rawContextParts.join('\n\n---\n\n')
+          : docs.map(d => `DOCUMENT: ${d.file_name}\n\n${d.summary ?? 'No summary available.'}`).join('\n\n---\n\n')
+      } else {
+        // Standard query — use summaries
+        documentContext = docs
+          .filter(d => d.summary_status === 'done')
+          .map(d => `DOCUMENT: ${d.file_name}\n\n${d.summary}`)
+          .join('\n\n---\n\n') || 'No documents have been reviewed for this case yet.'
+      }
+    }
 
     // Get recent chat history
     const { data: history } = await supabase
@@ -39,6 +65,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ reply })
   } catch (err: any) {
     console.error('Chat error:', err)
-    return NextResponse.json({ error: err.message ?? 'Chat failed' }, { status: 500 })
+    const isTimeout = err?.message?.includes('timeout') || err?.code === 'ETIMEDOUT'
+    const message = isTimeout
+      ? 'The AI took too long to respond. Please try again.'
+      : err.message ?? 'Chat failed'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

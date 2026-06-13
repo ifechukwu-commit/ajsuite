@@ -83,7 +83,12 @@ export default function DocumentsTab({ documents, uploading, error, onUpload, on
                     <DocBtn onClick={() => onSummarise(doc.id)}>Summarise</DocBtn>
                   )}
                   {doc.summary_status === 'processing' && (
-                    <span className="text-xs px-2 py-1" style={{ color: 'var(--text-muted)' }}>Processing...</span>
+                    <span className="flex items-center gap-1.5 text-xs px-2 py-1" style={{ color: 'var(--text-muted)' }}>
+                      <svg className="animate-spin" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 8" />
+                      </svg>
+                      Processing
+                    </span>
                   )}
                   <DocBtn onClick={() => onDelete(doc)}>Delete</DocBtn>
                 </div>

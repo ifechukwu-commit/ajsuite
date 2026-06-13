@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@/types'
 
-const TRIAL_DAYS = 14
+const TRIAL_DAYS = 30
 const ADMIN_EMAILS = [
   'ajcasemanager46@gmail.com',
   'ifechukwudarlington.dev@gmail.com',
@@ -38,8 +38,13 @@ export function useUser() {
 
     fetchUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      fetchUser()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        fetchUser()
+      }
+      if (event === 'SIGNED_OUT') {
+        window.location.href = '/'
+      }
     })
 
     return () => subscription.unsubscribe()

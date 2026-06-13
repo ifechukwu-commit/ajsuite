@@ -34,8 +34,7 @@ export async function POST(request: Request) {
 
     const summary = await summariseDocument(
       extractedText.slice(0, 12000),
-      caseData?.title ?? 'Unknown Matter',
-      caseData?.id.slice(0, 8).toUpperCase() ?? 'REF-000'
+      caseData?.title ?? 'Unknown Matter'
     )
 
     await supabase.from('documents')
@@ -49,6 +48,10 @@ export async function POST(request: Request) {
       const supabase = await createClient()
       await supabase.from('documents').update({ summary_status: 'failed' }).eq('id', documentId)
     }
-    return NextResponse.json({ error: err.message ?? 'Summarisation failed' }, { status: 500 })
+    const isTimeout = err?.message?.includes('timeout') || err?.code === 'ETIMEDOUT'
+    const message = isTimeout
+      ? 'The AI took too long to respond. Please try again.'
+      : err.message ?? 'Summarisation failed'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

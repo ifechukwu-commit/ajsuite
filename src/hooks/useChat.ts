@@ -1,6 +1,7 @@
 'use client'
 import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { friendlyError } from '@/lib/errors'
 import type { ChatMessage } from '@/types'
 
 export function useChat(caseId: string) {
@@ -23,7 +24,7 @@ export function useChat(caseId: string) {
       if (error) throw error
       setMessages(data ?? [])
     } catch (err: any) {
-      setError(err.message ?? 'Failed to load messages')
+      setError(friendlyError(err))
     } finally {
       setLoading(false)
     }
@@ -59,7 +60,7 @@ export function useChat(caseId: string) {
       await fetchMessages()
       return true
     } catch (err: any) {
-      setError(err.message ?? 'Failed to send message')
+      setError(friendlyError(err))
       return false
     } finally {
       setSending(false)

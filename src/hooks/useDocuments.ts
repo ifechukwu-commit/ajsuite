@@ -1,6 +1,7 @@
 'use client'
 import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { friendlyError } from '@/lib/errors'
 import type { Document } from '@/types'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -28,7 +29,7 @@ export function useDocuments(caseId: string) {
       if (error) throw error
       setDocuments(data ?? [])
     } catch (err: any) {
-      setError(err.message ?? 'Failed to load documents')
+      setError(friendlyError(err))
     } finally {
       setLoading(false)
     }
@@ -36,8 +37,8 @@ export function useDocuments(caseId: string) {
 
   const uploadDocument = async (file: File): Promise<Document | null> => {
     try {
-      if (file.size > MAX_FILE_SIZE) throw new Error('File exceeds 10MB limit')
-      if (!ALLOWED_TYPES.includes(file.type)) throw new Error('Only PDF, DOC, DOCX, and TXT files are allowed')
+      if (file.size > MAX_FILE_SIZE) throw new Error('This file is too large. Maximum size is 10MB. Please compress or split the document and try again.')
+      if (!ALLOWED_TYPES.includes(file.type)) throw new Error('Unsupported file type. Please upload a PDF, Word document (.doc or .docx), or plain text (.txt) file.')
 
       setUploading(true)
       setError(null)
@@ -84,7 +85,7 @@ export function useDocuments(caseId: string) {
       await fetchDocuments()
       return data
     } catch (err: any) {
-      setError(err.message ?? 'Upload failed')
+      setError(friendlyError(err))
       return null
     } finally {
       setUploading(false)
@@ -100,7 +101,7 @@ export function useDocuments(caseId: string) {
       await fetchDocuments()
       return true
     } catch (err: any) {
-      setError(err.message ?? 'Failed to delete document')
+      setError(friendlyError(err))
       return false
     }
   }
@@ -114,7 +115,7 @@ export function useDocuments(caseId: string) {
 
     const { data: signedData } = await supabase.storage
   .from('documents')
-  .createSignedUrl(new URL(doc.file_url).pathname.split('/documents/')[1], 60)
+  .createSignedUrl(new URL(doc.file_url).pathname.split('/documents/')[1], 300)
 
 if (!signedData?.signedUrl) throw new Error('Could not access file')
 const fileRes = await fetch(signedData.signedUrl)
@@ -145,9 +146,17 @@ const fileRes = await fetch(signedData.signedUrl)
       body: JSON.stringify({ documentId: docId, caseId, text }),
     })
 
+    // Store raw text for page-specific chat queries
+    if (text) {
+      await supabase
+        .from('documents')
+        .update({ raw_text: text.slice(0, 100000) })
+        .eq('id', docId)
+    }
+
     await fetchDocuments()
   } catch (err: any) {
-    setError(err.message ?? 'Summary request failed')
+    setError(friendlyError(err))
   }
 }
 

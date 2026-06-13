@@ -93,12 +93,12 @@ export default function Sidebar({ cases, onNewCase, activeCaseId }: Props) {
         {/* Footer */}
         <div className="px-5 py-4 border-t" style={{ borderColor: 'var(--navy-muted)' }}>
           <SupportButton />
-<button
-  onClick={signOut}
-  className="text-xs mb-2 w-full text-left transition-colors"
-  style={{ color: 'rgba(255,255,255,0.4)', background: 'transparent', border: 'none', cursor: 'pointer' }}>
-  Sign out
-</button>
+          <button
+            onClick={signOut}
+            className="text-xs mb-2 w-full text-left py-1.5 transition-colors rounded"
+            style={{ color: 'rgba(255,255,255,0.5)', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+            Sign out
+          </button>
           <p className="text-center" style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.06em' }}>
             Assumpta · Joseph
           </p>

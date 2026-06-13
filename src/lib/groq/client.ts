@@ -2,6 +2,7 @@ import Groq from 'groq-sdk'
 
 export const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
+  timeout: 30000,
 })
 
 export const DOCUMENT_SUMMARY_PROMPT = `You are a senior legal document analyst producing memoranda for qualified legal professionals.
@@ -14,7 +15,7 @@ LEGAL DOCUMENT REVIEW MEMORANDUM
 
 RE: [Document title and parties as written in the document]
 DATE: [Today's date formatted as DD Month YYYY]
-MATTER: [Case title and reference number provided]
+MATTER: [Case title provided]
 DOCUMENT TYPE: [Exact document type]
 
 NATURE AND PURPOSE OF DOCUMENT
@@ -55,8 +56,7 @@ STRICT OUTPUT RULES:
 
 export async function summariseDocument(
   documentText: string,
-  caseTitle: string,
-  caseRef: string
+  caseTitle: string
 ): Promise<string> {
   const response = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
@@ -66,7 +66,7 @@ export async function summariseDocument(
       { role: 'system', content: DOCUMENT_SUMMARY_PROMPT },
       {
         role: 'user',
-        content: `Case: ${caseTitle} [${caseRef}]\n\nDocument content:\n\n${documentText}`,
+        content: `Case: ${caseTitle}\n\nDocument content:\n\n${documentText}`,
       },
     ],
   })

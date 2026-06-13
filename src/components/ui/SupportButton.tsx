@@ -1,6 +1,6 @@
 export default function SupportButton() {
   return (
-    <a href="mailto:ajcasemanager46@gmail.com"
+    <a href="mailto:ajsuitesupport@gmail.com"
       className="flex items-center gap-2 text-xs transition-colors mb-3"
       style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}
       onMouseOver={e => (e.currentTarget.style.color = 'var(--gold)')}

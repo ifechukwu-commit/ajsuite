@@ -2,9 +2,9 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PROTECTED = ['/dashboard', '/cases', '/history', '/admin']
+const PROTECTED = ['/dashboard', '/cases', '/history', '/admin', '/claim']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const response = NextResponse.next({
     request: { headers: request.headers },
   })
@@ -37,5 +37,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/cases/:path*', '/history/:path*', '/admin/:path*'],
+  matcher: ['/dashboard/:path*', '/cases/:path*', '/history/:path*', '/admin/:path*', '/claim/:path*'],
 }
