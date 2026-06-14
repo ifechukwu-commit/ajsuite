@@ -25,13 +25,19 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
   const { pathname } = request.nextUrl
+const isProtected = PROTECTED.some(p => pathname.startsWith(p))
 
-  const isProtected = PROTECTED.some(p => pathname.startsWith(p))
-  if (isProtected && !session) {
+if (isProtected) {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (!user || error) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+  } catch {
     return NextResponse.redirect(new URL('/', request.url))
   }
+}
 
   return response
 }
