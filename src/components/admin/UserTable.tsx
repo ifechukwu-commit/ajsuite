@@ -14,7 +14,7 @@ const PLAN_STYLES: Record<Plan, { bg: string; color: string }> = {
 }
 
 function trialDaysLeft(u: User) {
-  const diff = Math.ceil((new Date(u.trial_start).getTime() + 14 * 86400000 - Date.now()) / 86400000)
+ const diff = Math.ceil((new Date(u.trial_start).getTime() + 30 * 86400000 - Date.now()) / 86400000)
   return Math.max(0, diff)
 }
 
@@ -36,7 +36,7 @@ export default function UserTable({ users, onAction }: Props) {
         </thead>
         <tbody>
           {users.map(u => {
-            const s = PLAN_STYLES[u.plan]
+           const s = PLAN_STYLES[u.plan] ?? { bg: '#eee', color: '#333' }
             const days = u.plan === 'trial' ? trialDaysLeft(u) : null
             return (
               <tr key={u.id} className="border-b transition-colors hover:bg-gray-50"
