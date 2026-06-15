@@ -3,10 +3,14 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+const COUNTRIES = ['Nigeria', 'United States', 'United Kingdom', 'Ghana', 'Kenya', 'South Africa', 'Canada', 'Australia', 'Other']
+
 export default function ClaimTrialPage() {
   const [claiming, setClaiming] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [alreadyClaimed, setAlreadyClaimed] = useState(false)
+  const [country, setCountry] = useState('')
+  const [state, setState] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -42,6 +46,8 @@ export default function ClaimTrialPage() {
         .update({
           trial_start: new Date().toISOString(),
           trial_claimed: true,
+          country: country || null,
+          state: state || null,
         })
         .eq('id', session.user.id)
 
@@ -97,6 +103,31 @@ export default function ClaimTrialPage() {
               <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>{item}</p>
             </div>
           ))}
+        </div>
+
+        {/* Country and State */}
+        <div className="flex flex-col gap-3 mb-6 text-left">
+          <div>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(255,255,255,0.4)' }}>Country <span style={{ color: 'rgba(255,255,255,0.2)' }}>(optional)</span></label>
+            <select
+              value={country}
+              onChange={e => setCountry(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-lg text-sm"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: country ? '#fff' : 'rgba(255,255,255,0.35)' }}>
+              <option value="">Select country</option>
+              {COUNTRIES.map(c => <option key={c} value={c} style={{ background: '#1B2B4B' }}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(255,255,255,0.4)' }}>State / Region <span style={{ color: 'rgba(255,255,255,0.2)' }}>(optional)</span></label>
+            <input
+              type="text"
+              value={state}
+              onChange={e => setState(e.target.value)}
+              placeholder="e.g. Lagos, Abuja, New York"
+              className="w-full px-3 py-2.5 rounded-lg text-sm placeholder-opacity-30"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }} />
+          </div>
         </div>
 
         {error && (
