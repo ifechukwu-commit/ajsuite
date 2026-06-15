@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     await supabase.from('documents').update({ summary_status: 'processing' }).eq('id', documentId)
 
     const summary = await summariseDocument(
-      extractedText,
+      extractedText.slice(0, 60000),
       caseData?.title ?? 'Unknown Matter'
     )
 
