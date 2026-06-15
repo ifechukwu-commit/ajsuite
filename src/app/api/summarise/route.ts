@@ -24,8 +24,8 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
 
     const { data: caseData } = await supabase
       .from('cases').select('title, id').eq('id', caseId).single()
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     await supabase.from('documents').update({ summary_status: 'processing' }).eq('id', documentId)
 
     const summary = await summariseDocument(
-      extractedText.slice(0, 12000),
+      extractedText,
       caseData?.title ?? 'Unknown Matter'
     )
 
