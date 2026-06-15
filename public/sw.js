@@ -27,7 +27,12 @@ self.addEventListener('fetch', (event) => {
   // Only cache GET requests
   if (event.request.method !== 'GET') return
   // Don't cache API or Supabase calls
-  if (event.request.url.includes('/api/') || event.request.url.includes('supabase')) return
+ if (event.request.url.includes('/api/') || 
+    event.request.url.includes('supabase') ||
+    event.request.url.includes('/dashboard') ||
+    event.request.url.includes('/cases') ||
+    event.request.url.includes('/auth') ||
+    event.request.url.includes('/claim')) return
 
   event.respondWith(
     caches.match(event.request).then((cached) => {
