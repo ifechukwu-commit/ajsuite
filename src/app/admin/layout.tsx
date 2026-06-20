@@ -34,7 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   )
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--warm-white)' }}>
+    <div className="flex h-screen overflow-hidden relative" style={{ background: 'var(--warm-white)' }}>
       <AdminSidebar />
       <main className="flex-1 overflow-y-auto scrollbar-thin">{children}</main>
     </div>
