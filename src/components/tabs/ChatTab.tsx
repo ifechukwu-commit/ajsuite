@@ -27,12 +27,12 @@ export default function ChatTab({ messages, sending, error, onSend, reviewedBy }
   const initials = reviewedBy.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 
   return (
-    <div className="flex flex-col h-full p-6" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+    <div className="flex flex-col h-full p-4 md:p-6" style={{ height: '100%' }}>
       {error && (
-        <div className="mb-3 px-4 py-2 rounded text-sm" style={{ background: '#FEE2E2', color: '#9B1C1C' }}>{error}</div>
+        <div className="mb-3 px-4 py-2 rounded text-sm flex-shrink-0" style={{ background: '#FEE2E2', color: '#9B1C1C' }}>{error}</div>
       )}
 
-      <div className="flex-1 overflow-y-auto scrollbar-thin flex flex-col gap-4 mb-4">
+      <div className="flex-1 overflow-y-auto scrollbar-thin flex flex-col gap-4 mb-4 min-h-0">
         {messages.length === 0 ? (
           <EmptyState title="No messages yet" description="Ask about this case or any uploaded document." />
         ) : (
@@ -44,7 +44,7 @@ export default function ChatTab({ messages, sending, error, onSend, reviewedBy }
                   : { background: 'var(--gold)', color: 'var(--navy)' }}>
                 {msg.role === 'assistant' ? 'AJ' : initials}
               </div>
-              <div className="max-w-2xl px-4 py-3 rounded-lg text-sm leading-relaxed"
+              <div className="max-w-[85%] md:max-w-2xl px-4 py-3 rounded-lg text-sm leading-relaxed"
                 style={msg.role === 'assistant'
                   ? { background: '#fff', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '2px 8px 8px 8px' }
                   : { background: 'var(--navy)', color: 'rgba(255,255,255,0.92)', borderRadius: '8px 2px 8px 8px' }}>
@@ -80,3 +80,4 @@ export default function ChatTab({ messages, sending, error, onSend, reviewedBy }
     </div>
   )
 }
+
