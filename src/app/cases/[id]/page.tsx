@@ -140,7 +140,7 @@ export default function CasePage() {
           </div>
 
           <div className="flex flex-1 overflow-hidden">
-            <div className="flex-1 overflow-hidden min-w-0">
+            <div className="flex-1 overflow-y-auto min-w-0">
               {activeTab === 'overview' && <OverviewTab caseData={caseData} documents={documents} />}
               {activeTab === 'documents' && (
                 <DocumentsTab
