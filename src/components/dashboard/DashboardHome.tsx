@@ -26,7 +26,7 @@ export default function DashboardHome({ user, cases, onNewCase }: Props) {
         {greeting}, {name}.
       </h1>
       <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-        {today}{urgent > 0 ? ` — ${urgent} matter${urgent > 1 ? 's' : ''} require attention today.` : '.'}
+        {today}{urgent > 0 ? ` - ${urgent} matter${urgent > 1 ? 's' : ''} require attention today.` : '.'}
       </p>
       <StatCards cases={cases} />
       <RecentCases cases={cases} onNewCase={onNewCase} />
