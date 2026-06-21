@@ -16,6 +16,10 @@ export function friendlyError(err: any): string {
     return msg
   if (msg.includes('Unsupported') || msg.includes('file type'))
     return msg
+  if (msg.includes('could not be read') || msg.includes('corrupted') || msg.includes('re-save'))
+    return msg
 
-  return msg || 'Something went wrong. Please try again.'
+  // Anything we don't recognize — log it for you, show generic message to users
+  console.error('Unhandled error:', err)
+  return 'Something went wrong processing your request. Please try again, or contact support if this keeps happening.'
 }
