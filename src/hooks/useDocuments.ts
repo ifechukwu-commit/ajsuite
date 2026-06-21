@@ -5,7 +5,7 @@ import { friendlyError } from '@/lib/errors'
 import type { Document } from '@/types'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-const ALLOWED_TYPES = ['application/pdf', 'application/msword',
+const ALLOWED_TYPES = ['application/pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'text/plain']
 
@@ -38,8 +38,7 @@ export function useDocuments(caseId: string) {
   const uploadDocument = async (file: File): Promise<Document | null> => {
     try {
       if (file.size > MAX_FILE_SIZE) throw new Error('This file is too large. Maximum size is 10MB. Please compress or split the document and try again.')
-      if (!ALLOWED_TYPES.includes(file.type)) throw new Error('Unsupported file type. Please upload a PDF, Word document (.doc or .docx), or plain text (.txt) file.')
-
+     if (!ALLOWED_TYPES.includes(file.type)) throw new Error('Unsupported file type. Please upload a PDF, Word document (.docx only - older .doc files are not supported), or plain text (.txt) file.')
       setUploading(true)
       setError(null)
 
@@ -133,11 +132,15 @@ const fileRes = await fetch(signedData.signedUrl)
         const content = await page.getTextContent()
         text += content.items.map((item: any) => ('str' in item ? item.str : '')).join(' ')
       }
-    } else if (doc.file_type === 'doc' || doc.file_type === 'docx') {
-      const { default: mammoth } = await import('mammoth')
-      const buffer = await fileRes.arrayBuffer()
-      const result = await mammoth.extractRawText({ arrayBuffer: buffer })
-      text = result.value
+    } else if (doc.file_type === 'docx') {
+      try {
+        const { default: mammoth } = await import('mammoth')
+        const buffer = await fileRes.arrayBuffer()
+        const result = await mammoth.extractRawText({ arrayBuffer: buffer })
+        text = result.value
+      } catch {
+        throw new Error('This document could not be read. It may be corrupted or saved in an unsupported format. Please re-save as .docx and try again.')
+      }
     }
 
     await fetch('/api/summarise', {
