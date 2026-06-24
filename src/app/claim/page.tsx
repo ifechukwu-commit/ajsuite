@@ -81,7 +81,7 @@ export default function ClaimTrialPage() {
           Your 30-Day Free Trial
         </h1>
         <p className="text-sm leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.6)' }}>
-          Full access to case management, AI document review, and everything AJ Suite offers.
+          Full access to case management, document storage, and everything AJ Suite offers.
           Your trial begins the moment you claim it.
         </p>
 
@@ -89,8 +89,8 @@ export default function ClaimTrialPage() {
           style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
           {[
             'Unlimited case files and documents',
-            'AI legal document review memoranda',
-            'Full chat, timeline, and export access',
+            'Deadline reminders that follow every hearing date',
+            'Full timeline, task tracking, and export access',
             'No payment required to start',
           ].map((item, i) => (
             <div key={i} className="flex gap-3 items-start mb-3 last:mb-0">

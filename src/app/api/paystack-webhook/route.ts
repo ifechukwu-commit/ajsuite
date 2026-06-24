@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { verifyPaystackSignature, getPlanFromPaystackEvent, type PaystackEvent } from '@/lib/paystack/webhook'
+import { verifyPaystackSignature, isValidSubscriptionAmount, type PaystackEvent } from '@/lib/paystack/webhook'
 
 export async function POST(request: Request) {
   try {
@@ -19,26 +19,38 @@ export async function POST(request: Request) {
 
     const email = event.data?.customer?.email
     const reference = event.data?.reference
+    const amount = event.data?.amount
     if (!email || !reference) return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+    if (!isValidSubscriptionAmount(amount)) return NextResponse.json({ error: 'Unexpected amount' }, { status: 400 })
 
-    const supabase = await createServiceClient()
+    const supabase = createServiceClient()
 
-    // Idempotency check — don't process same reference twice
+    // Idempotency — if this reference was already marked success, don't extend twice.
+    const { data: existingSub } = await supabase
+      .from('subscriptions').select('id, status').eq('paystack_reference', reference).single()
+    if (existingSub?.status === 'success') return NextResponse.json({ received: true })
+
     const { data: existing } = await supabase
-      .from('users').select('id, plan').eq('email', email).single()
-
+      .from('users').select('id, plan, paid_until').eq('email', email).single()
     if (!existing) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-    const plan = getPlanFromPaystackEvent(event)
-    if (!plan) return NextResponse.json({ error: 'Unknown plan amount' }, { status: 400 })
+    // Extends from whichever is later: now, or their current paid_until —
+    // so renewing early stacks on top instead of resetting the clock.
+    const base = existing.paid_until && new Date(existing.paid_until) > new Date()
+      ? new Date(existing.paid_until)
+      : new Date()
+    const newPaidUntil = new Date(base.getTime() + 30 * 86400000)
 
-    await supabase.from('users').update({ plan }).eq('email', email)
+    await supabase.from('users').update({ plan: 'paid', paid_until: newPaidUntil.toISOString() }).eq('id', existing.id)
 
-    // Send notification to user
+    await supabase.from('subscriptions')
+      .update({ status: 'success', paid_at: new Date().toISOString(), expires_at: newPaidUntil.toISOString() })
+      .eq('paystack_reference', reference)
+
     await supabase.from('notifications').insert({
       user_id: existing.id,
       title: 'Subscription Activated',
-      body: `Your ${plan === 'solo' ? 'Solo Counsel' : 'Chamber Pro'} plan is now active. Thank you.`,
+      body: `Your AJ Suite subscription is active until ${newPaidUntil.toLocaleDateString('en-GB')}. Thank you.`,
       type: 'paystack',
     })
 

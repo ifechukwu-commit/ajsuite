@@ -3,7 +3,6 @@ import type { Case, Document } from '@/types'
 interface Props { caseData: Case; documents: Document[] }
 
 export default function OverviewTab({ caseData, documents }: Props) {
-  const reviewed = documents.filter(d => d.summary_status === 'done').length
   const deadline = caseData.deadline
     ? new Date(caseData.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : null
@@ -27,7 +26,7 @@ export default function OverviewTab({ caseData, documents }: Props) {
         </Card>
         <Card title="Documents">
           <p className="font-baskerville text-3xl font-bold mb-1" style={{ color: 'var(--navy)' }}>{documents.length}</p>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{reviewed} reviewed · {documents.length - reviewed} pending</p>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>file{documents.length === 1 ? '' : 's'} attached to this matter</p>
         </Card>
         <Card title="Next Deadline">
           {deadline ? (
@@ -51,7 +50,7 @@ export default function OverviewTab({ caseData, documents }: Props) {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border p-5" style={{ background: '#fff', borderColor: 'var(--border)' }}>
+    <div className="rounded-lg border p-5" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
       <h3 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>{title}</h3>
       {children}
     </div>

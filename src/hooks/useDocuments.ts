@@ -2,14 +2,24 @@
 import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { friendlyError } from '@/lib/errors'
+import { STORAGE_CAP_BYTES_UNPAID } from '@/lib/constants'
 import type { Document } from '@/types'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-const ALLOWED_TYPES = ['application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'text/plain']
+const ALLOWED_TYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+  'application/msword', // .doc
+  'text/plain',
+]
 
-export function useDocuments(caseId: string) {
+interface UseDocumentsOptions {
+  workspaceId?: string | null
+  /** Pass false once the workspace is on a paid/admin plan — lifts the 150MB cap. */
+  capStorage?: boolean
+}
+
+export function useDocuments(caseId: string, options: UseDocumentsOptions = {}) {
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -37,20 +47,41 @@ export function useDocuments(caseId: string) {
 
   const uploadDocument = async (file: File): Promise<Document | null> => {
     try {
-      if (file.size > MAX_FILE_SIZE) throw new Error('This file is too large. Maximum size is 10MB. Please compress or split the document and try again.')
-     if (!ALLOWED_TYPES.includes(file.type)) throw new Error('Unsupported file type. Please upload a PDF, Word document (.docx only - older .doc files are not supported), or plain text (.txt) file.')
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error('This file is too large. Maximum size is 10MB. Please compress or split the document and try again.')
+      }
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        throw new Error('Unsupported file type. Please upload a PDF, Word document (.doc or .docx), or plain text (.txt) file.')
+      }
+
       setUploading(true)
       setError(null)
 
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('Not authenticated')
 
-      const ext = file.name.split('.').pop()
-      const path = `${session.user.id}/${caseId}/${Date.now()}.${ext}`
+      const ownerId = options.workspaceId ?? session.user.id
+
+      // Storage cap check — only applies to unpaid workspaces. New uploads
+      // stop at 150MB; nothing already uploaded is ever touched by this.
+      if (options.capStorage) {
+        const { data: owner } = await supabase
+          .from('users')
+          .select('storage_used_bytes')
+          .eq('id', ownerId)
+          .single()
+        const used = owner?.storage_used_bytes ?? 0
+        if (used + file.size > STORAGE_CAP_BYTES_UNPAID) {
+          throw new Error('Storage is full on the free plan (150MB). Subscribe to keep uploading — everything already saved stays readable either way.')
+        }
+      }
+
+      const ext = file.name.split('.').pop()?.toLowerCase() ?? 'txt'
+      const path = `${ownerId}/${caseId}/${Date.now()}.${ext}`
 
       const { error: uploadError } = await supabase.storage
         .from('documents')
-        .upload(path, file)
+        .upload(path, file, { cacheControl: 'public, max-age=31536000, immutable' })
 
       if (uploadError) throw uploadError
 
@@ -62,12 +93,12 @@ export function useDocuments(caseId: string) {
         .from('documents')
         .insert({
           case_id: caseId,
-          user_id: session.user.id,
+          user_id: ownerId,
+          created_by: session.user.id,
           file_name: file.name,
           file_type: fileType,
           file_url: publicUrl,
           file_size: file.size,
-          summary_status: 'pending',
         })
         .select()
         .single()
@@ -76,7 +107,7 @@ export function useDocuments(caseId: string) {
 
       await supabase.from('timeline_events').insert({
         case_id: caseId,
-        user_id: session.user.id,
+        user_id: ownerId,
         event_type: 'document_uploaded',
         description: `Document uploaded: ${file.name}`,
       })
@@ -105,63 +136,24 @@ export function useDocuments(caseId: string) {
     }
   }
 
- const requestSummary = async (docId: string): Promise<void> => {
-  try {
-    const doc = documents.find(d => d.id === docId)
-    if (!doc) return
-
-    await supabase.from('documents').update({ summary_status: 'processing' }).eq('id', docId)
-
-    const { data: signedData } = await supabase.storage
-  .from('documents')
-  .createSignedUrl(new URL(doc.file_url).pathname.split('/documents/')[1], 300)
-
-if (!signedData?.signedUrl) throw new Error('Could not access file')
-const fileRes = await fetch(signedData.signedUrl)
-    let text = ''
-
-    if (doc.file_type === 'txt') {
-      text = await fileRes.text()
-    } else if (doc.file_type === 'pdf') {
-      const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist')
-      GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
-      const buffer = await fileRes.arrayBuffer()
-      const pdf = await getDocument({ data: buffer }).promise
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i)
-        const content = await page.getTextContent()
-        text += content.items.map((item: any) => ('str' in item ? item.str : '')).join(' ')
-      }
-    } else if (doc.file_type === 'docx') {
-      try {
-        const { default: mammoth } = await import('mammoth')
-        const buffer = await fileRes.arrayBuffer()
-        const result = await mammoth.extractRawText({ arrayBuffer: buffer })
-        text = result.value
-      } catch {
-        throw new Error('This document could not be read. It may be corrupted or saved in an unsupported format. Please re-save as .docx and try again.')
-      }
-    }
-
-    await fetch('/api/summarise', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ documentId: docId, caseId, text }),
-    })
-
-    // Store raw text for page-specific chat queries
-    if (text) {
-      await supabase
+  /**
+   * Preview = open the file in a new tab via a signed URL. PDFs render
+   * natively in the browser; .doc/.docx prompt the user's own Word/Docs app.
+   * No server-side extraction needed for this — that was only ever required
+   * to feed an AI model, which no longer exists in this product.
+   */
+  const previewDocument = async (doc: Document): Promise<void> => {
+    try {
+      const path = new URL(doc.file_url).pathname.split('/documents/')[1]
+      const { data, error } = await supabase.storage
         .from('documents')
-        .update({ raw_text: text.slice(0, 100000) })
-        .eq('id', docId)
+        .createSignedUrl(path, 300)
+      if (error || !data?.signedUrl) throw error ?? new Error('Could not open file')
+      window.open(data.signedUrl, '_blank')
+    } catch (err: any) {
+      setError(friendlyError(err))
     }
-
-    await fetchDocuments()
-  } catch (err: any) {
-    setError(friendlyError(err))
   }
-}
 
-  return { documents, loading, uploading, error, fetchDocuments, uploadDocument, deleteDocument, requestSummary }
+  return { documents, loading, uploading, error, fetchDocuments, uploadDocument, deleteDocument, previewDocument }
 }

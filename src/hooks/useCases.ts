@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Case, NewCaseInput, EditCaseInput } from '@/types'
 
-export function useCases() {
+export function useCases(workspaceId?: string | null) {
   const [cases, setCases] = useState<Case[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -13,6 +13,7 @@ export function useCases() {
     try {
       setLoading(true)
       setError(null)
+      // No explicit filter — RLS already scopes this to your own workspace.
       const { data, error } = await supabase
         .from('cases')
         .select('*')
@@ -34,9 +35,13 @@ export function useCases() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('Not authenticated')
 
+      // Saved under the workspace owner's id so the whole firm can see it —
+      // not the raw signed-in id, which would be wrong for invited members.
+      const ownerId = workspaceId ?? session.user.id
+
       const { data, error } = await supabase
         .from('cases')
-        .insert({ ...input, user_id: session.user.id })
+        .insert({ ...input, user_id: ownerId, created_by: session.user.id })
         .select()
         .single()
 
@@ -44,7 +49,7 @@ export function useCases() {
 
       await supabase.from('timeline_events').insert({
         case_id: data.id,
-        user_id: session.user.id,
+        user_id: ownerId,
         event_type: 'case_created',
         description: `Matter opened: ${data.title}`,
       })
@@ -70,9 +75,10 @@ export function useCases() {
 
       if (error) throw error
 
+      const ownerId = workspaceId ?? session.user.id
       await supabase.from('timeline_events').insert({
         case_id: id,
-        user_id: session.user.id,
+        user_id: ownerId,
         event_type: 'status_changed',
         description: `Matter updated. Status: ${input.status}`,
       })

@@ -82,8 +82,8 @@ export default function ExportModal({ caseTitle, defaultReviewedBy, caseId, onCl
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.5)' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-md rounded-xl shadow-2xl p-7" style={{ background: '#fff' }}>
-        <h2 className="font-baskerville text-lg mb-1" style={{ color: 'var(--navy)' }}>Export Legal Memorandum</h2>
+      <div className="w-full max-w-md rounded-xl shadow-2xl p-7" style={{ background: 'var(--surface)' }}>
+        <h2 className="font-baskerville text-lg mb-1" style={{ color: 'var(--navy)' }}>Export Case File</h2>
         <p className="text-xs mb-5" style={{ color: 'var(--text-secondary)' }}>Select format and confirm details before export.</p>
 
         {error && <p className="text-xs mb-4 px-3 py-2 rounded" style={{ background: '#FEE2E2', color: '#9B1C1C' }}>{error}</p>}

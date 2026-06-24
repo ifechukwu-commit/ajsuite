@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient, createClient } from '@/lib/supabase/server'
-
-const ADMIN_EMAILS = [
-  'ajcasemanager46@gmail.com',
-  'ifechukwudarlington.dev@gmail.com',
-  'ahia4.agent@gmail.com',
-]
+import { ADMIN_EMAILS } from '@/lib/constants'
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -38,7 +33,7 @@ export async function PATCH(request: Request) {
     await supabase.from('notifications').insert({
       user_id: userId,
       title: 'Your Plan Has Been Updated',
-      body: `Your account has been updated to the ${plan === 'solo' ? 'Solo Counsel' : plan === 'chamber' ? 'Chamber Pro' : plan} plan.`,
+      body: `Your account has been updated to the ${plan} plan.`,
       type: 'announcement',
     })
     return NextResponse.json({ success: true })

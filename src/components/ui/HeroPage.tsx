@@ -81,22 +81,27 @@ export default function HeroPage() {
           </h1>
           <p className="text-sm leading-relaxed mb-8 max-w-sm"
             style={{ color: 'rgba(255,255,255,0.55)' }}>
-            Built for solo counsel and small chambers. Organise matters, review documents with AI precision, and manage every case in one place.
+            Built for solo counsel and small chambers. Organise matters, track every deadline, and manage every case in one place.
           </p>
 
-          {/* Feature list */}
-          <div className="flex flex-col gap-3 mb-8">
-            {[
-              'AI legal review memoranda from uploaded documents',
-              'Full case history, deadlines, and client records',
-              'Chat with your case file - ask anything',
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="w-1 h-1 rounded-full mt-2 flex-shrink-0" style={{ background: '#8B1A2F' }} />
-                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{item}</p>
-              </div>
-            ))}
-          </div>
+         {/* Feature list */}
+<div className="flex flex-col gap-3 mb-8">
+  {[
+    'Deadline reminders that follow every hearing and filing date',
+    'Full case history, documents, and client records',
+    'Invite your team - everyone sees the same workspace',
+  ].map((item, i) => (
+    <div key={i} className="flex items-start gap-3">
+      <div
+        className="w-1 h-1 rounded-full mt-2 flex-shrink-0"
+        style={{ background: '#8B1A2F' }}
+      />
+      <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+        {item}
+      </p>
+    </div>
+  ))}
+</div>
 
           {/* CTA */}
           <button onClick={handleSignIn}

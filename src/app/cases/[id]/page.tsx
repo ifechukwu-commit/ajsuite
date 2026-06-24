@@ -1,18 +1,18 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import { useCases } from '@/hooks/useCases'
 import { useDocuments } from '@/hooks/useDocuments'
-import { useChat } from '@/hooks/useChat'
 import Sidebar from '@/components/layout/Sidebar'
 import TrialBanner from '@/components/layout/TrialBanner'
+import RestrictedBanner from '@/components/dashboard/RestrictedBanner'
 import DeadlinesBanner from '@/components/layout/DeadlinesBanner'
 import MatterHeader from '@/components/cases/MatterHeader'
 import OverviewTab from '@/components/tabs/OverviewTab'
 import DocumentsTab from '@/components/tabs/DocumentsTab'
-import ChatTab from '@/components/tabs/ChatTab'
+import TasksTab from '@/components/tabs/TasksTab'
 import TimelineTab from '@/components/tabs/TimelineTab'
 import NotesTab from '@/components/tabs/NotesTab'
 import RightPanel from '@/components/ui/RightPanel'
@@ -20,14 +20,14 @@ import EditCaseModal from '@/components/cases/EditCaseModal'
 import ConfirmDeleteModal from '@/components/cases/ConfirmDeleteModal'
 import ExportModal from '@/components/export/ExportModal'
 import NotificationsPanel from '@/components/notifications/NotificationsPanel'
-import type { Case, TimelineEvent, Deadline, Document } from '@/types'
+import type { Case, TimelineEvent, Deadline } from '@/types'
 
-type Tab = 'overview' | 'documents' | 'chat' | 'timeline' | 'notes'
+type Tab = 'overview' | 'documents' | 'tasks' | 'timeline' | 'notes'
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'overview', label: 'Overview' },
   { key: 'documents', label: 'Documents' },
-  { key: 'chat', label: 'AI Chat' },
+  { key: 'tasks', label: 'Tasks' },
   { key: 'timeline', label: 'Timeline' },
   { key: 'notes', label: 'Notes' },
 ]
@@ -35,20 +35,22 @@ const TABS: { key: Tab; label: string }[] = [
 export default function CasePage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const caseId = params.id as string
   const supabase = createClient()
 
-  const { user, loading: userLoading, showTrialBanner, trialDaysLeft, reviewedBy, isActive } = useUser()
-  const { cases, updateCase, deleteCase } = useCases()
-  const { documents, loading: docsLoading, uploading, error: docError, fetchDocuments, uploadDocument, deleteDocument, requestSummary } = useDocuments(caseId)
-  const { messages, loading: chatLoading, sending, error: chatError, fetchMessages, sendMessage } = useChat(caseId)
+  const { user, workspaceId, loading: userLoading, showTrialBanner, trialDaysLeft, reviewedBy, isActive, isRestricted, isMemberBlocked } = useUser()
+  const { cases, updateCase, deleteCase } = useCases(workspaceId)
+  const canUpload = user?.role === 'owner' || isActive()
+  const { documents, loading: docsLoading, uploading, error: docError, fetchDocuments, uploadDocument, deleteDocument, previewDocument } =
+    useDocuments(caseId, { workspaceId, capStorage: user?.plan === 'trial' })
 
-  const [activeTab, setActiveTab] = useState<Tab>('overview')
+  const initialTab = (searchParams.get('tab') as Tab) || 'overview'
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab)
   const [caseData, setCaseData] = useState<Case | null>(null)
   const [timeline, setTimeline] = useState<TimelineEvent[]>([])
   const [deadlines, setDeadlines] = useState<Deadline[]>([])
   const [notifications, setNotifications] = useState(0)
-  const [selectedDoc, setSelectedDoc] = useState<Document | null>(null)
 
   const [showEdit, setShowEdit] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
@@ -58,7 +60,11 @@ export default function CasePage() {
 
   useEffect(() => {
     if (!userLoading && !user) router.push('/')
-    if (!userLoading && user && !isActive()) router.push('/expired')
+    // Members whose firm has lapsed are a safety net here — middleware
+    // should already have redirected them before this ever renders.
+    if (!userLoading && user && isMemberBlocked()) router.push('/expired')
+    // Owners are NEVER redirected here, even when expired — they stay,
+    // restricted, with full read access. See RestrictedBanner below.
   }, [user, userLoading])
 
   useEffect(() => {
@@ -77,7 +83,7 @@ export default function CasePage() {
       setDeadlines(dl ?? [])
       setNotifications((notif ?? []).length)
     }
-    if (caseId) { loadExtras(); fetchDocuments(); fetchMessages() }
+    if (caseId) { loadExtras(); fetchDocuments() }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [caseId])
 
@@ -90,9 +96,17 @@ export default function CasePage() {
   }
 
   const allDeadlines = cases
-    .filter(c => c.deadline)
-    .map(c => ({ id: c.id, case_id: c.id, user_id: c.user_id, label: c.title, due_date: c.deadline!, is_critical: c.status === 'Urgent', created_at: c.created_at }))
-
+  .filter(c => c.deadline)
+  .map(c => ({
+    id: c.id,
+    case_id: c.id,
+    user_id: c.user_id,
+    label: c.title,
+    due_date: c.deadline!,
+    is_critical: c.status === 'Urgent',
+    created_at: c.created_at,
+    created_by: c.created_by ?? null
+  }))
   if (!caseData) return (
     <div className="flex items-center justify-center h-screen">
       <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading matter...</p>
@@ -102,6 +116,9 @@ export default function CasePage() {
   return (
     <div className="flex flex-col h-screen">
       {showTrialBanner() && <TrialBanner daysLeft={trialDaysLeft()} />}
+      {isRestricted() && (
+        <div className="px-4 pt-3"><RestrictedBanner onUpgrade={() => router.push('/settings')} /></div>
+      )}
       <DeadlinesBanner deadlines={allDeadlines} />
 
       <div className="flex flex-1 overflow-hidden">
@@ -122,13 +139,12 @@ export default function CasePage() {
 
           {/* Tabs — horizontally scrollable on mobile */}
           <div className="flex border-b px-4 md:px-6 flex-shrink-0 overflow-x-auto scrollbar-thin"
-            style={{ background: '#fff', borderColor: 'var(--border)' }}>
+            style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
             {TABS.map(t => (
               <button key={t.key} onClick={() => setActiveTab(t.key)}
                 className="px-3 md:px-4 py-3 text-xs font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0"
                 style={{
                   color: activeTab === t.key ? 'var(--navy)' : 'var(--text-secondary)',
-                  borderBottomColor: activeTab === t.key ? 'var(--gold)' : 'transparent',
                   fontWeight: activeTab === t.key ? 600 : 400,
                   background: 'transparent',
                   border: 'none',
@@ -145,18 +161,12 @@ export default function CasePage() {
               {activeTab === 'documents' && (
                 <DocumentsTab
                   documents={documents} uploading={uploading} error={docError}
-                  onUpload={uploadDocument} onDelete={deleteDocument}
-                  onSummarise={requestSummary} onViewSummary={setSelectedDoc}
+                  onUpload={uploadDocument} onDelete={deleteDocument} onPreview={previewDocument}
                 />
               )}
-              {activeTab === 'chat' && (
-                <ChatTab
-                  messages={messages} sending={sending} error={chatError}
-                  onSend={sendMessage} reviewedBy={reviewedBy()}
-                />
-              )}
+              {activeTab === 'tasks' && <TasksTab caseId={caseId} workspaceId={workspaceId} />}
               {activeTab === 'timeline' && <TimelineTab events={timeline} />}
-              {activeTab === 'notes' && <NotesTab caseId={caseId} initialNotes={caseData.notes ?? ''} />}
+              {activeTab === 'notes' && <NotesTab caseId={caseId} workspaceId={workspaceId} />}
             </div>
 
             {/* Right panel — hidden on mobile entirely, visible md and up */}
@@ -179,27 +189,6 @@ export default function CasePage() {
         <ExportModal caseTitle={caseData.title} defaultReviewedBy={reviewedBy()} caseId={caseId} onClose={() => setShowExport(false)} />
       )}
       {showNotifications && <NotificationsPanel onClose={() => setShowNotifications(false)} />}
-
-      {/* Summary viewer */}
-      {selectedDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}
-          onClick={() => setSelectedDoc(null)}>
-          <div className="w-full max-w-2xl rounded-xl shadow-2xl flex flex-col" style={{ background: '#fff', maxHeight: '80vh' }}
-            onClick={e => e.stopPropagation()}>
-            <div className="p-6 overflow-y-auto">
-              <pre className="text-sm whitespace-pre-wrap" style={{ fontFamily: 'var(--font-inter)', color: 'var(--text-primary)' }}>
-                {selectedDoc.summary}
-              </pre>
-            </div>
-            <button onClick={() => setSelectedDoc(null)}
-              className="m-4 self-end px-4 py-2 rounded-lg text-sm"
-              style={{ background: 'var(--navy)', color: '#fff' }}>
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
-

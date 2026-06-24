@@ -1,16 +1,26 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getWorkspaceAccess } from '@/lib/access/workspace'
 
 export async function POST(request: Request) {
   try {
     const { caseId, format, fileName, reviewedBy } = await request.json()
 
     const supabase = await createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
 
-    const { data: caseData } = await supabase.from('cases').select('*').eq('id', caseId).single()
-    const { data: docs } = await supabase.from('documents').select('*').eq('case_id', caseId).eq('summary_status', 'done')
+    const access = await getWorkspaceAccess(supabase, user.id)
+    if (!access?.canExport) {
+      return NextResponse.json({ error: 'Exporting is part of an active subscription. Subscribe to export this matter.' }, { status: 402 })
+    }
+
+    const [{ data: caseData }, { data: notes }, { data: tasks }, { data: documents }] = await Promise.all([
+      supabase.from('cases').select('*').eq('id', caseId).single(),
+      supabase.from('case_notes').select('*').eq('case_id', caseId).order('created_at', { ascending: true }),
+      supabase.from('tasks').select('*').eq('case_id', caseId).order('due_date', { ascending: true }),
+      supabase.from('documents').select('file_name, created_at').eq('case_id', caseId),
+    ])
 
     const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     const divider = '\n'
@@ -22,21 +32,34 @@ export async function POST(request: Request) {
     content += `Status: ${caseData?.status ?? ''}\n`
     content += `Reference: ${caseData?.id.slice(0, 8).toUpperCase() ?? ''}\n`
     content += `Date Exported: ${date}\n`
-    content += `Reviewed By: ${reviewedBy}\n\n`
-    content += `${divider}\n\n`
+    content += `Reviewed By: ${reviewedBy}\n\n${divider}\n\n`
 
-    if (caseData?.notes) {
-      content += `CASE NOTES\n\n${caseData.notes}\n\n${divider}\n\n`
+    if (notes && notes.length > 0) {
+      content += `CASE NOTES\n\n`
+      notes.forEach(n => {
+        content += `${new Date(n.created_at).toLocaleDateString('en-GB')} — ${n.body}\n\n`
+      })
+      content += `${divider}\n\n`
     }
 
-    if (docs && docs.length > 0) {
-      docs.forEach(doc => {
-        content += `DOCUMENT REVIEW: ${doc.file_name}\n\n${doc.summary}\n\n${divider}\n\n`
+    if (tasks && tasks.length > 0) {
+      content += `TASKS\n\n`
+      tasks.forEach(t => {
+        content += `[${t.status === 'Done' ? 'x' : ' '}] ${t.title}${t.due_date ? ` — due ${new Date(t.due_date).toLocaleDateString('en-GB')}` : ''}\n`
       })
+      content += `\n${divider}\n\n`
+    }
+
+    if (documents && documents.length > 0) {
+      content += `DOCUMENTS ON FILE\n\n`
+      documents.forEach(d => {
+        content += `${d.file_name} — uploaded ${new Date(d.created_at).toLocaleDateString('en-GB')}\n`
+      })
+      content += `\n${divider}\n\n`
     }
 
     content += `REVIEWED BY: ${reviewedBy}\n\n`
-    content += `CONFIDENTIALITY NOTICE: This export contains AI-generated analysis and does not constitute legal advice. All findings must be independently verified by a licensed legal professional before reliance in any legal matter.`
+    content += `This export was prepared from AJ Suite case records. It does not constitute legal advice and should be reviewed against the original source documents before use.`
 
     const safeName = fileName.replace(/[^a-zA-Z0-9_\-\s]/g, '').replace(/\s+/g, '_') || 'export'
 
@@ -49,14 +72,8 @@ export async function POST(request: Request) {
       })
     }
 
-    if (format === 'pdf') {
-      // Return content for client-side jsPDF generation
-      return NextResponse.json({ content, fileName: safeName, format: 'pdf' })
-    }
-
-    if (format === 'docx') {
-      // Return content for client-side docx generation
-      return NextResponse.json({ content, fileName: safeName, format: 'docx' })
+    if (format === 'pdf' || format === 'docx') {
+      return NextResponse.json({ content, fileName: safeName, format })
     }
 
     return NextResponse.json({ error: 'Invalid format' }, { status: 400 })

@@ -9,8 +9,7 @@ interface Props {
   error: string | null
   onUpload: (file: File) => Promise<any>
   onDelete: (doc: Document) => Promise<any>
-  onSummarise: (docId: string) => Promise<any>
-  onViewSummary: (doc: Document) => any
+  onPreview: (doc: Document) => Promise<void>
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -21,7 +20,7 @@ function formatSize(bytes: number) {
   return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export default function DocumentsTab({ documents, uploading, error, onUpload, onDelete, onSummarise, onViewSummary }: Props) {
+export default function DocumentsTab({ documents, uploading, error, onUpload, onDelete, onPreview }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleDrop = (e: React.DragEvent) => {
@@ -50,13 +49,13 @@ export default function DocumentsTab({ documents, uploading, error, onUpload, on
               <path d="M16 22V10M10 16l6-6 6 6" /><rect x="4" y="4" width="24" height="24" rx="4" />
             </svg>
             <p className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Drop files here or click to upload</p>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>PDF, DOC, TXT only · Maximum 10MB per file</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>PDF, DOC, DOCX, or TXT · Maximum 10MB per file</p>
           </>
         )}
       </div>
 
       {documents.length === 0 ? (
-        <EmptyState title="No documents uploaded" description="Upload a contract or document to generate an AI legal review memorandum." />
+        <EmptyState title="No documents uploaded" description="Upload a motion, affidavit, or evidence file to attach it to this matter." />
       ) : (
         <>
           <h3 className="text-xs font-bold uppercase tracking-widest mb-3 pb-2 border-b"
@@ -64,7 +63,7 @@ export default function DocumentsTab({ documents, uploading, error, onUpload, on
           <div className="flex flex-col gap-2">
             {documents.map(doc => (
               <div key={doc.id} className="flex items-center gap-3 px-4 py-3 rounded-lg border"
-                style={{ background: '#fff', borderColor: 'var(--border)' }}>
+                style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                 <div className="w-9 h-9 rounded-md flex items-center justify-center text-white flex-shrink-0"
                   style={{ background: TYPE_COLORS[doc.file_type] ?? '#1B2B4B', fontSize: '10px', fontWeight: 700 }}>
                   {doc.file_type.toUpperCase()}
@@ -72,24 +71,14 @@ export default function DocumentsTab({ documents, uploading, error, onUpload, on
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{doc.file_name}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    {new Date(doc.created_at).toLocaleDateString('en-GB')} · {formatSize(doc.file_size)} · {statusLabel(doc.summary_status)}
+                    {new Date(doc.created_at).toLocaleDateString('en-GB')} · {formatSize(doc.file_size)}
                   </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
-                  {doc.summary_status === 'done' && (
-                    <DocBtn onClick={() => onViewSummary(doc)} gold>View Summary</DocBtn>
-                  )}
-                  {doc.summary_status === 'pending' && (
-                    <DocBtn onClick={() => onSummarise(doc.id)}>Summarise</DocBtn>
-                  )}
-                  {doc.summary_status === 'processing' && (
-                    <span className="flex items-center gap-1.5 text-xs px-2 py-1" style={{ color: 'var(--text-muted)' }}>
-                      <svg className="animate-spin" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 8" />
-                      </svg>
-                      Processing
-                    </span>
-                  )}
+                  <DocBtn onClick={() => onPreview(doc)} gold>Preview</DocBtn>
+                  <a href={doc.file_url} download={doc.file_name}>
+                    <DocBtn onClick={() => {}}>Download</DocBtn>
+                  </a>
                   <DocBtn onClick={() => onDelete(doc)}>Delete</DocBtn>
                 </div>
               </div>
@@ -110,9 +99,4 @@ function DocBtn({ onClick, children, gold }: { onClick: () => void; children: Re
       {children}
     </button>
   )
-}
-
-function statusLabel(s: Document['summary_status']) {
-  const map = { pending: 'Not summarised', processing: 'Processing...', done: 'AI Summary Available', failed: 'Summary failed', unreadable: 'Unreadable document' }
-  return map[s]
 }

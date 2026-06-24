@@ -1,6 +1,7 @@
 export type CaseStatus = 'Active' | 'Urgent' | 'Pending' | 'Closed'
 
 export type Plan = 'trial' | 'solo' | 'chamber' | 'admin'
+export type Role = 'owner' | 'member'
 
 export interface User {
   id: string
@@ -9,13 +10,21 @@ export interface User {
   firm_name: string | null
   title: string | null
   plan: Plan
+  role: Role
+  owner_id: string | null
+  trial_claimed: boolean
   trial_start: string
+  paid_until: string | null
+  country: string | null
+  state: string | null
+  storage_used_bytes: number
   created_at: string
 }
 
 export interface Case {
   id: string
   user_id: string
+  created_by: string | null
   title: string
   client_name: string
   client_contact: string | null
@@ -31,21 +40,33 @@ export interface Document {
   id: string
   case_id: string
   user_id: string
+  created_by: string | null
   file_name: string
   file_type: 'pdf' | 'doc' | 'docx' | 'txt'
   file_url: string
   file_size: number
-  summary: string | null
-  summary_status: 'pending' | 'processing' | 'done' | 'failed' | 'unreadable'
   created_at: string
 }
 
-export interface ChatMessage {
+export interface Task {
   id: string
   case_id: string
   user_id: string
-  role: 'user' | 'assistant'
-  content: string
+  title: string
+  due_date: string | null
+  priority: 'High' | 'Medium' | 'Low'
+  status: 'Pending' | 'Done'
+  assigned_to: string | null
+  created_by: string
+  created_at: string
+}
+
+export interface CaseNote {
+  id: string
+  case_id: string
+  user_id: string
+  body: string
+  created_by: string
   created_at: string
 }
 
@@ -53,7 +74,7 @@ export interface TimelineEvent {
   id: string
   case_id: string
   user_id: string
-  event_type: 'case_created' | 'status_changed' | 'document_uploaded' | 'deadline_added' | 'note_updated' | 'case_exported'
+  event_type: 'case_created' | 'status_changed' | 'document_uploaded' | 'deadline_added' | 'task_completed' | 'note_added' | 'case_exported'
   description: string
   created_at: string
 }
@@ -62,6 +83,7 @@ export interface Deadline {
   id: string
   case_id: string
   user_id: string
+  created_by: string | null
   label: string
   due_date: string
   is_critical: boolean
@@ -96,4 +118,11 @@ export interface NewCaseInput {
 
 export interface EditCaseInput extends NewCaseInput {
   id: string
+}
+
+export interface TeamInvite {
+  id: string
+  owner_id: string
+  email: string
+  created_at: string
 }

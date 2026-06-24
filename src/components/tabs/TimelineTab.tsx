@@ -8,7 +8,8 @@ const DOT_COLORS: Record<TimelineEvent['event_type'], string> = {
   status_changed: 'var(--gold)',
   document_uploaded: '#2D6A4F',
   deadline_added: '#DC2626',
-  note_updated: 'var(--text-muted)',
+  task_completed: 'var(--text-muted)',
+  note_added: 'var(--text-muted)',
   case_exported: 'var(--gold)',
 }
 

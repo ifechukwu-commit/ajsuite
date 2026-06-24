@@ -6,12 +6,7 @@ import type { Case } from '@/types'
 import StatusBadge from '@/components/cases/StatusBadge'
 import SupportButton from '@/components/ui/SupportButton'
 import { useUser } from '@/hooks/useUser'
-
-const ADMIN_EMAILS = [
-  'ajcasemanager46@gmail.com',
-  'ifechukwudarlington.dev@gmail.com',
-  'ahia4.agent@gmail.com',
-]
+import { ADMIN_EMAILS } from '@/lib/constants'
 
 interface Props {
   cases: Case[]
@@ -60,7 +55,9 @@ export default function Sidebar({ cases, onNewCase, activeCaseId }: Props) {
           <p className="text-xs font-bold tracking-widest uppercase px-2 mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Navigation</p>
           {[
             { href: '/dashboard', label: 'Dashboard', icon: 'M8 1L1 7v8h5v-5h4v5h5V7L8 1z' },
-            { href: '/history', label: 'History', icon: null },
+            { href: '/calendar', label: 'Calendar', icon: 'M3 2h10v2H3zM2 5h12v9H2zM4 7h2v2H4zM7 7h2v2H7zM10 7h2v2h-2z' },
+            { href: '/team', label: 'Team', icon: 'M5 7a2 2 0 100-4 2 2 0 000 4zM11 7a2 2 0 100-4 2 2 0 000 4zM1 13c0-2.2 1.8-4 4-4s4 1.8 4 4M7 13c0-1.8 1.5-3.3 3.3-3.3 1.8 0 3.3 1.5 3.3 3.3' },
+            { href: '/settings', label: 'Settings', icon: 'M8 5a3 3 0 100 6 3 3 0 000-6zM8 1v2M8 13v2M2 8H1M15 8h-1M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4' },
           ].map(({ href, label, icon }) => (
             <Link key={href} href={href}
               className="flex items-center gap-2.5 px-3 py-2 rounded-md text-xs mb-1 transition-all"

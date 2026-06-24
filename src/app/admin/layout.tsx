@@ -3,12 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AdminSidebar from '@/components/admin/AdminSidebar'
-
-const ADMIN_EMAILS = [
-  'ajcasemanager46@gmail.com',
-  'ifechukwudarlington.dev@gmail.com',
-  'ahia4.agent@gmail.com',
-]
+import { ADMIN_EMAILS } from '@/lib/constants'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [checking, setChecking] = useState(true)
