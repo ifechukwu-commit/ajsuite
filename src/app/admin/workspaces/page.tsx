@@ -37,13 +37,13 @@ export default function AdminWorkspacesPage() {
 
   const left = trialDaysLeft(u)
   return left > 0
-    ? { label: `Trial — ${left}d left`, locked: false }
+    ? { label: `Trial - ${left}d left`, locked: false }
     : { label: 'Restricted (trial ended)', locked: true }
 }
 
-  const giftPass = async (userId: string) => {
+   const giftPass = async (userId: string, durationDays: number | null) => {
     setActing(userId)
-    await fetch('/api/admin/gift-pass', { method: 'POST', body: JSON.stringify({ userId }) })
+    await fetch('/api/admin/gift-pass', { method: 'POST', body: JSON.stringify({ userId, durationDays }) })
     await load()
     setActing(null)
   }
@@ -52,7 +52,7 @@ export default function AdminWorkspacesPage() {
     <div className="p-8">
       <h1 className="font-baskerville text-xl mb-1" style={{ color: 'var(--navy)' }}>Workspaces & Free Access</h1>
       <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
-        Every workspace, its lock status, and a manual override for testers or favours — flips access on instantly, no payment record created.
+        Every workspace, its lock status, and a manual override for testers or favours - flips access on instantly, no payment record created.
       </p>
 
       {loading ? (
@@ -73,8 +73,8 @@ export default function AdminWorkspacesPage() {
                   style={{ background: s.locked ? '#FEE2E2' : '#D8F3DC', color: s.locked ? '#9B1C1C' : '#2D6A4F', fontSize: '9px' }}>
                   {s.locked ? 'Locked — ' : ''}{s.label}
                 </span>
-                {o.plan !== 'admin' && (
-                  <button onClick={() => giftPass(o.id)} disabled={acting === o.id}
+                 {o.plan !== 'admin' && (
+  <button onClick={() => giftPass(o.id, 30)} disabled={acting === o.id}
                     className="px-3 py-1.5 rounded text-xs font-bold flex-shrink-0 transition-opacity hover:opacity-80 disabled:opacity-50"
                     style={{ background: 'var(--gold)', color: 'var(--navy)' }}>
                     {acting === o.id ? 'Applying...' : 'Gift Free Pass'}

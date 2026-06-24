@@ -14,15 +14,18 @@ export async function POST(request: Request) {
     const admin = await requireAdmin()
     if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    const { userId } = await request.json()
-    const supabase = createServiceClient()
+    const { userId, durationDays } = await request.json()
+const supabase = createServiceClient()
 
-    // Flips the workspace to paid with no expiry — clears every lock
-    // instantly. No row in `subscriptions`, since no payment happened.
-    const { error } = await supabase
-      .from('users')
-      .update({ plan: 'paid', paid_until: null })
-      .eq('id', userId)
+const paidUntil = durationDays
+  ? new Date(Date.now() + durationDays * 86400000).toISOString()
+  : null
+
+const { error } = await supabase
+  .from('users')
+  .update({ plan: 'solo', paid_until: paidUntil })
+  .eq('id', userId)
+
     if (error) throw error
 
     await supabase.from('notifications').insert({
