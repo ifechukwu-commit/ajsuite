@@ -17,6 +17,8 @@ export interface User {
   paid_until: string | null
   country: string | null
   state: string | null
+  workspace_type: 'solo' | 'chamber' | null
+  last_review_prompt_at: string | null
   storage_used_bytes: number
   created_at: string
 }
@@ -26,8 +28,12 @@ export interface Case {
   user_id: string
   created_by: string | null
   title: string
+  case_number: string | null
   client_name: string
   client_contact: string | null
+  opposing_party: string | null
+  court: string | null
+  judge: string | null
   matter_type: string
   status: CaseStatus
   deadline: string | null
@@ -108,8 +114,12 @@ export interface ExportOptions {
 
 export interface NewCaseInput {
   title: string
+  case_number: string
   client_name: string
   client_contact: string
+  opposing_party: string
+  court: string
+  judge: string
   matter_type: string
   status: CaseStatus
   deadline: string
@@ -124,5 +134,7 @@ export interface TeamInvite {
   id: string
   owner_id: string
   email: string
+  name?: string
+  role: 'owner' | 'member'
   created_at: string
 }

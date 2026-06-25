@@ -42,7 +42,7 @@ export default function CasePage() {
   const { user, workspaceId, loading: userLoading, showTrialBanner, trialDaysLeft, reviewedBy, isActive, isRestricted, isMemberBlocked } = useUser()
   const { cases, updateCase, deleteCase } = useCases(workspaceId)
   const canUpload = user?.role === 'owner' || isActive()
-  const { documents, loading: docsLoading, uploading, error: docError, fetchDocuments, uploadDocument, deleteDocument, previewDocument } =
+  const { documents, loading: docsLoading, uploading, error: docError, fetchDocuments, uploadDocument, deleteDocument, previewDocument, downloadDocument } =
     useDocuments(caseId, { workspaceId, capStorage: user?.plan === 'trial' })
 
   const initialTab = (searchParams.get('tab') as Tab) || 'overview'
@@ -161,7 +161,7 @@ export default function CasePage() {
               {activeTab === 'documents' && (
                 <DocumentsTab
                   documents={documents} uploading={uploading} error={docError}
-                  onUpload={uploadDocument} onDelete={deleteDocument} onPreview={previewDocument}
+                  onUpload={uploadDocument} onDelete={deleteDocument} onPreview={previewDocument} onDownload={downloadDocument}
                 />
               )}
               {activeTab === 'tasks' && <TasksTab caseId={caseId} workspaceId={workspaceId} />}

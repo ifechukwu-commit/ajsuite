@@ -155,5 +155,23 @@ export function useDocuments(caseId: string, options: UseDocumentsOptions = {}) 
     }
   }
 
-  return { documents, loading, uploading, error, fetchDocuments, uploadDocument, deleteDocument, previewDocument }
+  // Download must also use a fresh signed URL — the bucket is private,
+  // so the old saved public file_url returns 404 "bucket not found".
+  const downloadDocument = async (doc: Document): Promise<void> => {
+    try {
+      const path = new URL(doc.file_url).pathname.split('/documents/')[1]
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .createSignedUrl(path, 300, { download: doc.file_name })
+      if (error || !data?.signedUrl) throw error ?? new Error('Could not download file')
+      const link = window.document.createElement('a')
+      link.href = data.signedUrl
+      link.download = doc.file_name
+      link.click()
+    } catch (err: any) {
+      setError(friendlyError(err))
+    }
+  }
+
+  return { documents, loading, uploading, error, fetchDocuments, uploadDocument, deleteDocument, previewDocument, downloadDocument }
 }

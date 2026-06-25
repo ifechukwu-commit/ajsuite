@@ -1,18 +1,31 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 const NAV = [
-  { href: '/admin', label: 'Overview' },
+  { href: '/admin', label: 'System Overview' },
   { href: '/admin/users', label: 'Users' },
-  { href: '/admin/workspaces', label: 'Workspaces & Free Access' },
+  { href: '/admin/workspaces', label: 'Workspaces' },
+  { href: '/admin/login-logs', label: 'Login Logs' },
+  { href: '/admin/activity-logs', label: 'Activity Logs' },
+  { href: '/admin/subscriptions', label: 'Subscriptions' },
+  { href: '/admin/free-access', label: 'Free Access Control' },
+  { href: '/admin/system-health', label: 'System Health' },
   { href: '/admin/notifications', label: 'Send Notification' },
 ]
 
 export default function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(true)
   const pathname = usePathname()
+  const router = useRouter()
+  const supabase = createClient()
+
+  const signOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+  }
 
   return (
     <>
@@ -38,12 +51,12 @@ export default function AdminSidebar() {
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
+        <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto scrollbar-thin">
           {NAV.map(({ href, label }) => {
             const active = pathname === href
             return (
               <Link key={href} href={href} onClick={() => setCollapsed(true)}
-                className="px-3 py-2 rounded-md text-xs transition-all"
+                className="px-3 py-2 rounded-md text-xs transition-all break-words"
                 style={{
                   background: active ? 'var(--gold)' : 'transparent',
                   color: active ? 'var(--navy)' : 'rgba(255,255,255,0.65)',
@@ -56,13 +69,12 @@ export default function AdminSidebar() {
         </nav>
 
         <div className="px-5 py-4 border-t" style={{ borderColor: 'var(--navy-muted)' }}>
-          <Link href="/dashboard" className="text-xs transition-colors"
-            style={{ color: 'rgba(255,255,255,0.35)' }}>
-            ← Back to App
-          </Link>
-          <p className="text-center mt-3" style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.06em' }}>
-            Assumpta · Joseph
-          </p>
+          <p className="text-xs mb-2 break-words" style={{ color: 'rgba(255,255,255,0.3)' }}>Signed in as admin/support</p>
+          <button onClick={signOut}
+            className="text-xs w-full text-left py-1.5 transition-colors rounded"
+            style={{ color: 'rgba(255,255,255,0.5)', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+            Sign out
+          </button>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { logActivity } from '@/lib/activityLog'
 import type { Case, NewCaseInput, EditCaseInput } from '@/types'
 
 export function useCases(workspaceId?: string | null) {
@@ -53,6 +54,8 @@ export function useCases(workspaceId?: string | null) {
         event_type: 'case_created',
         description: `Matter opened: ${data.title}`,
       })
+
+      logActivity(supabase, session.user.id, session.user.email, 'case_created', data.title)
 
       await fetchCases()
       return data

@@ -6,7 +6,6 @@ import { TRIAL_DAYS } from '@/lib/constants'
 export default function AdminWorkspacesPage() {
   const [owners, setOwners] = useState<(User & { member_count?: number })[]>([])
   const [loading, setLoading] = useState(true)
-  const [acting, setActing] = useState<string | null>(null)
 
   const load = async () => {
     const res = await fetch('/api/admin/users')
@@ -26,33 +25,26 @@ export default function AdminWorkspacesPage() {
     Math.max(0, Math.ceil((new Date(u.trial_start).getTime() + TRIAL_DAYS * 86400000 - Date.now()) / 86400000))
 
   const status = (u: User) => {
-  if (u.plan === 'admin') return { label: 'Admin', locked: false }
+    if (u.plan === 'admin') return { label: 'Admin', locked: false }
 
-  if (u.plan === 'solo' || u.plan === 'chamber') {
-    const active = !u.paid_until || new Date(u.paid_until) > new Date()
-    return active
-      ? { label: 'Active (paid)', locked: false }
-      : { label: 'Restricted (unpaid)', locked: true }
-  }
+    if (u.plan === 'solo' || u.plan === 'chamber') {
+      const active = !u.paid_until || new Date(u.paid_until) > new Date()
+      return active
+        ? { label: 'Active (paid)', locked: false }
+        : { label: 'Restricted (unpaid)', locked: true }
+    }
 
-  const left = trialDaysLeft(u)
-  return left > 0
-    ? { label: `Trial - ${left}d left`, locked: false }
-    : { label: 'Restricted (trial ended)', locked: true }
-}
-
-   const giftPass = async (userId: string, durationDays: number | null) => {
-    setActing(userId)
-    await fetch('/api/admin/gift-pass', { method: 'POST', body: JSON.stringify({ userId, durationDays }) })
-    await load()
-    setActing(null)
+    const left = trialDaysLeft(u)
+    return left > 0
+      ? { label: `Trial - ${left}d left`, locked: false }
+      : { label: 'Restricted (trial ended)', locked: true }
   }
 
   return (
-    <div className="p-8">
-      <h1 className="font-baskerville text-xl mb-1" style={{ color: 'var(--navy)' }}>Workspaces & Free Access</h1>
-      <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
-        Every workspace, its lock status, and a manual override for testers or favours - flips access on instantly, no payment record created.
+    <div className="p-4 sm:p-8">
+      <h1 className="font-baskerville text-xl mb-1 break-words" style={{ color: 'var(--navy)' }}>Workspaces</h1>
+      <p className="text-sm mb-8 break-words" style={{ color: 'var(--text-secondary)' }}>
+        Every workspace and its current lock status. To grant free access, use Free Access Control.
       </p>
 
       {loading ? (
@@ -62,24 +54,17 @@ export default function AdminWorkspacesPage() {
           {owners.map(o => {
             const s = status(o)
             return (
-              <div key={o.id} className="flex items-center gap-4 px-5 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
+              <div key={o.id} className="flex flex-col sm:flex-row sm:items-center gap-2 px-5 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{o.firm_name || o.full_name || o.email}</p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  <p className="text-sm font-medium break-words" style={{ color: 'var(--text-primary)' }}>{o.firm_name || o.full_name || o.email}</p>
+                  <p className="text-xs mt-0.5 break-words" style={{ color: 'var(--text-muted)' }}>
                     {o.email} · {o.member_count ?? 0} member{o.member_count === 1 ? '' : 's'}
                   </p>
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wide px-2 py-1 rounded flex-shrink-0"
+                <span className="text-xs font-bold uppercase tracking-wide px-2 py-1 rounded flex-shrink-0 self-start break-words"
                   style={{ background: s.locked ? '#FEE2E2' : '#D8F3DC', color: s.locked ? '#9B1C1C' : '#2D6A4F', fontSize: '9px' }}>
                   {s.locked ? 'Locked — ' : ''}{s.label}
                 </span>
-                 {o.plan !== 'admin' && (
-  <button onClick={() => giftPass(o.id, 30)} disabled={acting === o.id}
-                    className="px-3 py-1.5 rounded text-xs font-bold flex-shrink-0 transition-opacity hover:opacity-80 disabled:opacity-50"
-                    style={{ background: 'var(--gold)', color: 'var(--navy)' }}>
-                    {acting === o.id ? 'Applying...' : 'Gift Free Pass'}
-                  </button>
-                )}
               </div>
             )
           })}

@@ -9,23 +9,18 @@ async function requireAdmin() {
   return user
 }
 
-export async function POST(request: Request) {
+export async function GET() {
   try {
     const session = await requireAdmin()
     if (!session) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
-    const { title, body, type, targetUserId } = await request.json()
     const supabase = await createServiceClient()
-
-    if (targetUserId) {
-      await supabase.from('notifications').insert({ user_id: targetUserId, title, body, type })
-    } else {
-      const { data: users } = await supabase.from('users').select('id')
-      const inserts = (users ?? []).map(u => ({ user_id: u.id, title, body, type }))
-      if (inserts.length > 0) await supabase.from('notifications').insert(inserts)
-    }
-
-    return NextResponse.json({ success: true })
+    const { data, error } = await supabase
+      .from('login_logs')
+      .select('*')
+      .order('logged_in_at', { ascending: false })
+      .limit(200)
+    if (error) throw error
+    return NextResponse.json(data)
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

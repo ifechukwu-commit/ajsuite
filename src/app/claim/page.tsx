@@ -11,6 +11,8 @@ export default function ClaimTrialPage() {
   const [alreadyClaimed, setAlreadyClaimed] = useState(false)
   const [country, setCountry] = useState('')
   const [state, setState] = useState('')
+  const [workspaceType, setWorkspaceType] = useState<'solo' | 'chamber' | ''>('')
+  const [firmName, setFirmName] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -21,11 +23,11 @@ export default function ClaimTrialPage() {
 
       const { data: user } = await supabase
         .from('users')
-        .select('trial_claimed, plan')
+        .select('trial_claimed, plan, owner_id')
         .eq('id', session.user.id)
         .single()
 
-      if (user?.trial_claimed || user?.plan !== 'trial') {
+      if (user?.owner_id || user?.trial_claimed || user?.plan !== 'trial') {
         setAlreadyClaimed(true)
         setTimeout(() => router.push('/dashboard'), 2000)
       }
@@ -38,6 +40,9 @@ export default function ClaimTrialPage() {
       setClaiming(true)
       setError(null)
 
+      if (!workspaceType) throw new Error('Please tell us if you are a solo practice or a chamber/firm.')
+      if (!firmName.trim()) throw new Error('Please enter your firm or workspace name.')
+
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('Not authenticated')
 
@@ -48,6 +53,8 @@ export default function ClaimTrialPage() {
           trial_claimed: true,
           country: country || null,
           state: state || null,
+          workspace_type: workspaceType,
+          firm_name: firmName.trim(),
         })
         .eq('id', session.user.id)
 
@@ -103,6 +110,39 @@ export default function ClaimTrialPage() {
               <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>{item}</p>
             </div>
           ))}
+        </div>
+
+        {/* Solo or Chamber */}
+        <div className="mb-6 text-left">
+          <label className="text-xs mb-2 block" style={{ color: 'rgba(255,255,255,0.4)' }}>Are you a solo practice or a chamber/firm?</label>
+          <div className="flex flex-col sm:flex-row gap-2">
+            {(['solo', 'chamber'] as const).map(type => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setWorkspaceType(type)}
+                className="flex-1 px-3 py-3 rounded-lg text-sm font-medium capitalize transition-colors break-words"
+                style={{
+                  background: workspaceType === type ? '#fff' : 'rgba(255,255,255,0.08)',
+                  color: workspaceType === type ? 'var(--navy)' : 'rgba(255,255,255,0.7)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                }}>
+                {type === 'solo' ? 'Solo Practice' : 'Chamber / Firm'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Firm / Workspace Name */}
+        <div className="mb-6 text-left">
+          <label className="text-xs mb-1 block" style={{ color: 'rgba(255,255,255,0.4)' }}>Firm / Workspace Name</label>
+          <input
+            type="text"
+            value={firmName}
+            onChange={e => setFirmName(e.target.value)}
+            placeholder="e.g. Okafor & Co. Chambers"
+            className="w-full px-3 py-2.5 rounded-lg text-sm break-words"
+            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }} />
         </div>
 
         {/* Country and State */}

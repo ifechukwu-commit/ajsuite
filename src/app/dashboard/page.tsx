@@ -11,6 +11,7 @@ import DashboardHome from '@/components/dashboard/DashboardHome'
 import NewCaseModal from '@/components/cases/NewCaseModal'
 import { redirect } from 'next/navigation'
 import NotificationsPanel from '@/components/notifications/NotificationsPanel'
+import ReviewPopup from '@/components/dashboard/ReviewPopup'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -70,6 +71,7 @@ export default function DashboardPage() {
         </main>
       </div>
       {showNotifications && <NotificationsPanel onClose={() => setShowNotifications(false)} />}
+      {user && <ReviewPopup userId={user.id} lastPromptAt={user.last_review_prompt_at} />}
       {showNewCase && (
         <NewCaseModal
           onClose={() => setShowNewCase(false)}

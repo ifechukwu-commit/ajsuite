@@ -15,18 +15,25 @@ export async function POST(request: Request) {
     if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const { userId, durationDays } = await request.json()
-const supabase = createServiceClient()
+    const supabase = createServiceClient()
 
-const paidUntil = durationDays
-  ? new Date(Date.now() + durationDays * 86400000).toISOString()
-  : null
+    const paidUntil = durationDays
+      ? new Date(Date.now() + durationDays * 86400000).toISOString()
+      : null
 
-const { error } = await supabase
-  .from('users')
-  .update({ plan: 'solo', paid_until: paidUntil })
-  .eq('id', userId)
+    const { error } = await supabase
+      .from('users')
+      .update({ plan: 'solo', paid_until: paidUntil })
+      .eq('id', userId)
 
     if (error) throw error
+
+    await supabase.from('activity_logs').insert({
+      user_id: admin.id,
+      email: admin.email,
+      action: 'free_access_granted',
+      detail: `userId=${userId} duration=${durationDays ?? 'lifetime'}days`,
+    })
 
     await supabase.from('notifications').insert({
       user_id: userId,

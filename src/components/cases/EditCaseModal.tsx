@@ -13,8 +13,12 @@ export default function EditCaseModal({ caseData, onClose, onSubmit, loading }: 
   const [form, setForm] = useState<EditCaseInput>({
     id: caseData.id,
     title: caseData.title,
+    case_number: caseData.case_number ?? '',
     client_name: caseData.client_name,
     client_contact: caseData.client_contact ?? '',
+    opposing_party: caseData.opposing_party ?? '',
+    court: caseData.court ?? '',
+    judge: caseData.judge ?? '',
     matter_type: caseData.matter_type,
     status: caseData.status,
     deadline: caseData.deadline ?? '',
@@ -32,16 +36,31 @@ export default function EditCaseModal({ caseData, onClose, onSubmit, loading }: 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4" style={{ background: 'rgba(0,0,0,0.5)' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-lg rounded-xl shadow-2xl p-7" style={{ background: '#fff' }}>
-        <h2 className="font-baskerville text-lg mb-1" style={{ color: 'var(--navy)' }}>Edit Matter</h2>
-        <p className="text-xs mb-5" style={{ color: 'var(--text-secondary)' }}>Update the details for this case file.</p>
+      <div className="w-full max-w-lg rounded-xl shadow-2xl p-5 sm:p-7 max-h-[90vh] overflow-y-auto" style={{ background: '#fff' }}>
+        <h2 className="font-baskerville text-lg mb-1 break-words" style={{ color: 'var(--navy)' }}>Edit Matter</h2>
+        <p className="text-xs mb-5 break-words" style={{ color: 'var(--text-secondary)' }}>Update the details for this case file.</p>
 
-        {error && <p className="text-xs mb-4 px-3 py-2 rounded" style={{ background: '#FEE2E2', color: '#9B1C1C' }}>{error}</p>}
+        {error && <p className="text-xs mb-4 px-3 py-2 rounded break-words" style={{ background: '#FEE2E2', color: '#9B1C1C' }}>{error}</p>}
 
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <Field label="Matter Title *" value={form.title} onChange={v => set('title', v)} />
+          <Field label="Case Number" value={form.case_number} onChange={v => set('case_number', v)} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          <Field label="Matter Type *" value={form.matter_type} onChange={v => set('matter_type', v)} />
+          <Field label="Opposing Party" value={form.opposing_party} onChange={v => set('opposing_party', v)} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          <Field label="Client Name *" value={form.client_name} onChange={v => set('client_name', v)} />
+          <Field label="Client Contact" value={form.client_contact} onChange={v => set('client_contact', v)} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          <Field label="Court" value={form.court} onChange={v => set('court', v)} />
+          <Field label="Judge" value={form.judge} onChange={v => set('judge', v)} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-secondary)' }}>Status</label>
             <select value={form.status} onChange={e => set('status', e.target.value as CaseStatus)}
@@ -50,13 +69,6 @@ export default function EditCaseModal({ caseData, onClose, onSubmit, loading }: 
               {(['Active','Urgent','Pending','Closed'] as CaseStatus[]).map(s => <option key={s}>{s}</option>)}
             </select>
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <Field label="Client Name *" value={form.client_name} onChange={v => set('client_name', v)} />
-          <Field label="Client Contact" value={form.client_contact} onChange={v => set('client_contact', v)} />
-        </div>
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <Field label="Matter Type *" value={form.matter_type} onChange={v => set('matter_type', v)} />
           <Field label="Deadline" value={form.deadline} onChange={v => set('deadline', v)} type="date" />
         </div>
         <div className="mb-5">
@@ -66,7 +78,7 @@ export default function EditCaseModal({ caseData, onClose, onSubmit, loading }: 
             style={{ borderColor: 'var(--border)', fontFamily: 'var(--font-inter)' }} />
         </div>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-col sm:flex-row justify-end gap-2">
           <button onClick={onClose} className="px-4 py-2 rounded text-xs font-medium border"
             style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>Cancel</button>
           <button onClick={handleSubmit} disabled={loading}
@@ -84,8 +96,8 @@ function Field({ label, value, onChange, type = 'text' }: {
   label: string; value: string; onChange: (v: string) => void; type?: string
 }) {
   return (
-    <div>
-      <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-secondary)' }}>{label}</label>
+    <div className="min-w-0">
+      <label className="block text-xs font-semibold uppercase tracking-wider mb-1 break-words" style={{ color: 'var(--text-secondary)' }}>{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)}
         className="w-full px-3 py-2 rounded text-sm border outline-none"
         style={{ borderColor: 'var(--border)', fontFamily: 'var(--font-inter)' }} />

@@ -10,6 +10,7 @@ interface Props {
   onUpload: (file: File) => Promise<any>
   onDelete: (doc: Document) => Promise<any>
   onPreview: (doc: Document) => Promise<void>
+  onDownload: (doc: Document) => Promise<void>
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -20,7 +21,7 @@ function formatSize(bytes: number) {
   return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export default function DocumentsTab({ documents, uploading, error, onUpload, onDelete, onPreview }: Props) {
+export default function DocumentsTab({ documents, uploading, error, onUpload, onDelete, onPreview, onDownload }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleDrop = (e: React.DragEvent) => {
@@ -62,23 +63,23 @@ export default function DocumentsTab({ documents, uploading, error, onUpload, on
             style={{ color: 'var(--navy)', borderColor: 'var(--border)' }}>Uploaded Documents</h3>
           <div className="flex flex-col gap-2">
             {documents.map(doc => (
-              <div key={doc.id} className="flex items-center gap-3 px-4 py-3 rounded-lg border"
+              <div key={doc.id} className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-lg border"
                 style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                <div className="w-9 h-9 rounded-md flex items-center justify-center text-white flex-shrink-0"
-                  style={{ background: TYPE_COLORS[doc.file_type] ?? '#1B2B4B', fontSize: '10px', fontWeight: 700 }}>
-                  {doc.file_type.toUpperCase()}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-md flex items-center justify-center text-white flex-shrink-0"
+                    style={{ background: TYPE_COLORS[doc.file_type] ?? '#1B2B4B', fontSize: '10px', fontWeight: 700 }}>
+                    {doc.file_type.toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium break-words" style={{ color: 'var(--text-primary)' }}>{doc.file_name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                      {new Date(doc.created_at).toLocaleDateString('en-GB')} · {formatSize(doc.file_size)}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{doc.file_name}</p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    {new Date(doc.created_at).toLocaleDateString('en-GB')} · {formatSize(doc.file_size)}
-                  </p>
-                </div>
-                <div className="flex gap-2 flex-shrink-0">
+                <div className="flex flex-wrap gap-2 flex-shrink-0">
                   <DocBtn onClick={() => onPreview(doc)} gold>Preview</DocBtn>
-                  <a href={doc.file_url} download={doc.file_name}>
-                    <DocBtn onClick={() => {}}>Download</DocBtn>
-                  </a>
+                  <DocBtn onClick={() => onDownload(doc)}>Download</DocBtn>
                   <DocBtn onClick={() => onDelete(doc)}>Delete</DocBtn>
                 </div>
               </div>

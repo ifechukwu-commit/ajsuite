@@ -9,7 +9,8 @@ interface Props {
 }
 
 const INITIAL: NewCaseInput = {
-  title: '', client_name: '', client_contact: '',
+  title: '', case_number: '', client_name: '', client_contact: '',
+  opposing_party: '', court: '', judge: '',
   matter_type: '', status: 'Active', deadline: '', notes: '',
 }
 
@@ -29,23 +30,31 @@ export default function NewCaseModal({ onClose, onSubmit, loading }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4" style={{ background: 'rgba(0,0,0,0.5)' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-lg rounded-xl shadow-2xl p-7" style={{ background: '#fff' }}>
-        <h2 className="font-baskerville text-lg mb-1" style={{ color: 'var(--navy)' }}>Open New Matter</h2>
-        <p className="text-xs mb-5" style={{ color: 'var(--text-secondary)' }}>Enter the details for the new case file.</p>
+      <div className="w-full max-w-lg rounded-xl shadow-2xl p-5 sm:p-7 max-h-[90vh] overflow-y-auto" style={{ background: '#fff' }}>
+        <h2 className="font-baskerville text-lg mb-1 break-words" style={{ color: 'var(--navy)' }}>Open New Matter</h2>
+        <p className="text-xs mb-5 break-words" style={{ color: 'var(--text-secondary)' }}>Enter the details for the new case file.</p>
 
-        {error && <p className="text-xs mb-4 px-3 py-2 rounded" style={{ background: '#FEE2E2', color: '#9B1C1C' }}>{error}</p>}
+        {error && <p className="text-xs mb-4 px-3 py-2 rounded break-words" style={{ background: '#FEE2E2', color: '#9B1C1C' }}>{error}</p>}
 
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <Field label="Matter Title *" value={form.title} onChange={v => set('title', v)} placeholder="e.g. Johnson v. ABC Corp" />
-          <Field label="Matter Type *" value={form.matter_type} onChange={v => set('matter_type', v)} placeholder="e.g. Commercial Litigation" />
+          <Field label="Case Number" value={form.case_number} onChange={v => set('case_number', v)} placeholder="e.g. 2026/ACME/118" />
         </div>
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          <Field label="Matter Type *" value={form.matter_type} onChange={v => set('matter_type', v)} placeholder="e.g. Commercial Litigation" />
+          <Field label="Opposing Party" value={form.opposing_party} onChange={v => set('opposing_party', v)} placeholder="e.g. M. Okoro" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <Field label="Client Name *" value={form.client_name} onChange={v => set('client_name', v)} placeholder="Full legal name" />
           <Field label="Client Contact" value={form.client_contact} onChange={v => set('client_contact', v)} placeholder="Phone or email" />
         </div>
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          <Field label="Court" value={form.court} onChange={v => set('court', v)} placeholder="e.g. High Court (Commercial Division)" />
+          <Field label="Judge" value={form.judge} onChange={v => set('judge', v)} placeholder="e.g. Hon. Justice A. Adeyemi" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-secondary)' }}>Status</label>
             <select value={form.status} onChange={e => set('status', e.target.value as CaseStatus)}
@@ -63,7 +72,7 @@ export default function NewCaseModal({ onClose, onSubmit, loading }: Props) {
             style={{ borderColor: 'var(--border)', fontFamily: 'var(--font-inter)' }} />
         </div>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-col sm:flex-row justify-end gap-2">
           <button onClick={onClose} className="px-4 py-2 rounded text-xs font-medium border transition-colors"
             style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>Cancel</button>
           <button onClick={handleSubmit} disabled={loading}
@@ -81,8 +90,8 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string
 }) {
   return (
-    <div>
-      <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-secondary)' }}>{label}</label>
+    <div className="min-w-0">
+      <label className="block text-xs font-semibold uppercase tracking-wider mb-1 break-words" style={{ color: 'var(--text-secondary)' }}>{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
         className="w-full px-3 py-2 rounded text-sm border outline-none transition-colors focus-navy"
         style={{ borderColor: 'var(--border)', fontFamily: 'var(--font-inter)' }} />
