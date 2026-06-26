@@ -39,7 +39,7 @@ export default function Sidebar({ cases, onNewCase, activeCaseId }: Props) {
           onClick={() => setCollapsed(true)} />
       )}
 
-      <div className={`flex flex-col flex-shrink-0
+      <div className={`flex flex-col flex-shrink-0 overflow-y-auto scrollbar-thin
 
         w-64 md:w-60
         fixed md:relative z-20 md:z-auto h-full md:h-auto
@@ -147,7 +147,7 @@ export default function Sidebar({ cases, onNewCase, activeCaseId }: Props) {
         </div>
 
         {/* Active Matters */}
-        <div className="px-3 pb-4 flex-1 min-h-0 overflow-y-auto scrollbar-thin">
+        <div className="px-3 pb-4 max-h-56 overflow-y-auto scrollbar-thin">
           <p className="text-xs font-bold tracking-widest uppercase px-2 mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Active Matters</p>
           {activeCases.map(c => (
             <Link key={c.id} href={`/cases/${c.id}`}
@@ -173,7 +173,7 @@ export default function Sidebar({ cases, onNewCase, activeCaseId }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t" style={{ borderColor: 'var(--navy-muted)' }}>
+        <div className="px-5 py-4 border-t" style={{ borderColor: 'var(--navy-muted)', background: 'var(--navy)' }}>
           <SupportButton />
           <button
             onClick={signOut}

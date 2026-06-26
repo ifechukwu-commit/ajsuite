@@ -52,7 +52,7 @@ export async function getWorkspaceAccess(
   const active = computeActive(ownerRow)
   const status: WorkspaceStatus = ownerRow.plan === 'admin'
     ? 'admin'
-    : ownerRow.plan === 'paid'
+    : (ownerRow.plan === 'solo' || ownerRow.plan === 'chamber')
       ? (active ? 'paid' : 'expired')
       : (active ? 'trial' : 'expired')
 
@@ -89,7 +89,7 @@ export async function getWorkspaceAccess(
 
 function computeActive(row: { plan: string; trial_claimed: boolean; trial_start: string; paid_until: string | null }) {
   if (row.plan === 'admin') return true
-  if (row.plan === 'paid') return !row.paid_until || new Date(row.paid_until) > new Date()
+  if (row.plan === 'solo' || row.plan === 'chamber') return !row.paid_until || new Date(row.paid_until) > new Date()
   if (row.plan === 'trial') return row.trial_claimed && daysSince(row.trial_start) < TRIAL_DAYS
   return false
 }

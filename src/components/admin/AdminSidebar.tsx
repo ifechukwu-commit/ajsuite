@@ -13,6 +13,7 @@ const NAV = [
   { href: '/admin/subscriptions', label: 'Subscriptions' },
   { href: '/admin/free-access', label: 'Free Access Control' },
   { href: '/admin/system-health', label: 'System Health' },
+  { href: '/admin/reviews', label: 'Reviews' },
   { href: '/admin/notifications', label: 'Send Notification' },
 ]
 

@@ -31,17 +31,19 @@ export async function POST(request: Request) {
     if (existingSub?.status === 'success') return NextResponse.json({ received: true })
 
     const { data: existing } = await supabase
-      .from('users').select('id, plan, paid_until').eq('email', email).single()
+      .from('users').select('id, plan, paid_until, workspace_type').eq('email', email).single()
     if (!existing) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-    // Extends from whichever is later: now, or their current paid_until —
-    // so renewing early stacks on top instead of resetting the clock.
     const base = existing.paid_until && new Date(existing.paid_until) > new Date()
       ? new Date(existing.paid_until)
       : new Date()
     const newPaidUntil = new Date(base.getTime() + 30 * 86400000)
 
-    await supabase.from('users').update({ plan: 'paid', paid_until: newPaidUntil.toISOString() }).eq('id', existing.id)
+    const newPlan = (existing.plan === 'solo' || existing.plan === 'chamber')
+      ? existing.plan
+      : (existing.workspace_type === 'chamber' ? 'chamber' : 'solo')
+
+    await supabase.from('users').update({ plan: newPlan, paid_until: newPaidUntil.toISOString() }).eq('id', existing.id)
 
     await supabase.from('subscriptions')
       .update({ status: 'success', paid_at: new Date().toISOString(), expires_at: newPaidUntil.toISOString() })

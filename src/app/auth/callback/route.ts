@@ -28,16 +28,8 @@ export async function GET(request: Request) {
           .single()
 
         if (pendingInvite) {
-          await serviceClient
-            .from('users')
-            .update({ owner_id: pendingInvite.owner_id, role: pendingInvite.role || 'member' })
-            .eq('id', user.id)
-          await serviceClient
-            .from('team_invites')
-            .delete()
-            .eq('id', pendingInvite.id)
-          return NextResponse.redirect(`${origin}/dashboard`)
-        }
+  return NextResponse.redirect(`${origin}/team/invite`)
+}
 
         const { data: profile } = await supabase
           .from('users')
@@ -48,7 +40,21 @@ export async function GET(request: Request) {
         // Anyone invited in (owner_id set) never goes through trial/claim
         // onboarding — that only applies to new independent owners.
         if (profile?.owner_id) {
-          return NextResponse.redirect(`${origin}/dashboard`)
+          // check if user has pending invite BEFORE routing
+const serviceClient = createServiceClient()
+
+const { data: pendingInvite } = await serviceClient
+  .from('team_invites')
+  .select('id')
+  .eq('email', user.email)
+  .limit(1)
+  .maybeSingle()
+
+if (pendingInvite) {
+  return NextResponse.redirect(`${origin}/team/invite`)
+}
+
+return NextResponse.redirect(`${origin}/dashboard`)
         }
 
         if (profile?.plan === 'admin') {
