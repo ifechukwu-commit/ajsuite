@@ -88,8 +88,7 @@ export default function TeamCollaborationTab({ caseId, workspaceId, currentUserI
       setSession(data)
     } else {
       console.error('sessions/create failed:', data)
-     const debugText = data.debug ? ` (caseFound: ${data.debug.caseFound}, caseError: ${data.debug.caseError}, meFound: ${data.debug.meFound}, meError: ${data.debug.meError}, caseOwnerId: ${data.debug.caseOwnerId}, myWorkspaceId: ${data.debug.myWorkspaceId})` : ''
-      setLinkError((data.error || 'Something went wrong.') + debugText)
+      setLinkError(data.error === 'Forbidden' ? 'You do not have permission to invite on this matter.' : (data.error || 'Something went wrong. Please try again.'))
     }
   }
 

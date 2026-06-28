@@ -189,7 +189,10 @@ export default function CasePage() {
 
       {showEdit && (
         <EditCaseModal caseData={caseData} onClose={() => setShowEdit(false)}
-          onSubmit={async (input) => { await updateCase(input); setShowEdit(false) }} />
+          onSubmit={async (input) => {
+            const ok = await updateCase(input)
+            if (ok) { setShowEdit(false) } else { setBlockedMsg('Could not save your changes. Please try again.') }
+          }} />
       )}
       {showDelete && (
         <ConfirmDeleteModal caseTitle={caseData.title} loading={deleting}

@@ -27,17 +27,20 @@ export async function POST(request: Request) {
 
     let content = `LEGAL MATTER EXPORT\n\n`
     content += `Matter: ${caseData?.title ?? ''}\n`
+    content += `Case Number: ${caseData?.case_number || 'Not assigned'}\n`
     content += `Client: ${caseData?.client_name ?? ''}\n`
+    content += `Opposing Party: ${caseData?.opposing_party || 'Not set'}\n`
+    content += `Court: ${caseData?.court || 'Not set'}\n`
+    content += `Judge: ${caseData?.judge || 'Not set'}\n`
     content += `Matter Type: ${caseData?.matter_type ?? ''}\n`
     content += `Status: ${caseData?.status ?? ''}\n`
-    content += `Reference: ${caseData?.id.slice(0, 8).toUpperCase() ?? ''}\n`
     content += `Date Exported: ${date}\n`
     content += `Reviewed By: ${reviewedBy}\n\n${divider}\n\n`
 
     if (notes && notes.length > 0) {
       content += `CASE NOTES\n\n`
       notes.forEach(n => {
-        content += `${new Date(n.created_at).toLocaleDateString('en-GB')} — ${n.body}\n\n`
+        content += `${new Date(n.created_at).toLocaleDateString('en-GB')}, ${n.body}\n\n`
       })
       content += `${divider}\n\n`
     }
@@ -45,7 +48,7 @@ export async function POST(request: Request) {
     if (tasks && tasks.length > 0) {
       content += `TASKS\n\n`
       tasks.forEach(t => {
-        content += `[${t.status === 'Approved' ? 'x' : ' '}] ${t.title} (${t.status})${t.due_date ? ` — due ${new Date(t.due_date).toLocaleDateString('en-GB')}` : ''}\n`
+        content += `[${t.status === 'Approved' ? 'x' : ' '}] ${t.title} (${t.status})${t.due_date ? ` due ${new Date(t.due_date).toLocaleDateString('en-GB')}` : ''}\n`
       })
       content += `\n${divider}\n\n`
     }
@@ -53,7 +56,7 @@ export async function POST(request: Request) {
     if (documents && documents.length > 0) {
       content += `DOCUMENTS ON FILE\n\n`
       documents.forEach(d => {
-        content += `${d.file_name} — uploaded ${new Date(d.created_at).toLocaleDateString('en-GB')}\n`
+        content += `${d.file_name}, uploaded ${new Date(d.created_at).toLocaleDateString('en-GB')}\n`
       })
       content += `\n${divider}\n\n`
     }

@@ -14,7 +14,6 @@ export function useCases(workspaceId?: string | null) {
     try {
       setLoading(true)
       setError(null)
-      // No explicit filter — RLS already scopes this to your own workspace.
       const { data, error } = await supabase
         .from('cases')
         .select('*')
@@ -36,8 +35,6 @@ export function useCases(workspaceId?: string | null) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('Not authenticated')
 
-      // Saved under the workspace owner's id so the whole firm can see it —
-      // not the raw signed-in id, which would be wrong for invited members.
       const ownerId = workspaceId ?? session.user.id
 
       const { data, error } = await supabase
@@ -48,14 +45,17 @@ export function useCases(workspaceId?: string | null) {
 
       if (error) throw error
 
-      await supabase.from('timeline_events').insert({
-        case_id: data.id,
-        user_id: ownerId,
-        event_type: 'case_created',
-        description: `Matter opened: ${data.title}`,
-      })
-
-      logActivity(supabase, session.user.id, session.user.email, 'case_created', data.title)
+      try {
+        await supabase.from('timeline_events').insert({
+          case_id: data.id,
+          user_id: ownerId,
+          event_type: 'case_created',
+          description: `Matter opened: ${data.title}`,
+        })
+        logActivity(supabase, session.user.id, session.user.email, 'case_created', data.title)
+      } catch {
+        // intentionally swallowed — the case was already created successfully
+      }
 
       await fetchCases()
       return data
@@ -79,12 +79,16 @@ export function useCases(workspaceId?: string | null) {
       if (error) throw error
 
       const ownerId = workspaceId ?? session.user.id
-      await supabase.from('timeline_events').insert({
-        case_id: id,
-        user_id: ownerId,
-        event_type: 'status_changed',
-        description: `Matter updated. Status: ${input.status}`,
-      })
+      try {
+        await supabase.from('timeline_events').insert({
+          case_id: id,
+          user_id: ownerId,
+          event_type: 'status_changed',
+          description: `Matter updated. Status: ${input.status}`,
+        })
+      } catch {
+        // intentionally swallowed — the edit itself already saved successfully
+      }
 
       await fetchCases()
       return true

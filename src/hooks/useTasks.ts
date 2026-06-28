@@ -73,6 +73,7 @@ export function useTasks(caseId: string, workspaceId?: string | null) {
       reviewed_at: new Date().toISOString(),
     }).eq('id', task.id)
     if (error) { setError(error.message); return }
+    if (session) logActivity(supabase, session.user.id, session.user.email, decision === 'Approved' ? 'task_approved' : 'task_revision_requested', task.title)
     await fetchTasks()
   }
 

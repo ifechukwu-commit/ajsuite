@@ -2,7 +2,7 @@
 import { useUser } from '@/hooks/useUser'
 import { useCases } from '@/hooks/useCases'
 import { useState } from 'react'
-import { redirect } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Sidebar from '@/components/layout/Sidebar'
 import NewCaseModal from '@/components/cases/NewCaseModal'
@@ -12,9 +12,10 @@ import EmptyState from '@/components/ui/EmptyState'
 export default function CasesPage() {
   const { user, workspaceId, loading: userLoading, isMemberBlocked, isRestricted } = useUser()
   const { cases, loading: casesLoading, createCase } = useCases(workspaceId)
+  const router = useRouter()
   const [showNewCase, setShowNewCase] = useState(false)
-  const [blockedMsg, setBlockedMsg] = useState(false)
-  const handleNewCase = () => isRestricted() ? setBlockedMsg(true) : setShowNewCase(true)
+  const [blockedMsg, setBlockedMsg] = useState<string | null>(null)
+  const handleNewCase = () => isRestricted() ? setBlockedMsg('New cases are paused until you renew. Everything you already have stays fully visible.') : setShowNewCase(true)
   const [creating, setCreating] = useState(false)
 
   if (!userLoading && !user) { redirect('/'); return null }
@@ -58,17 +59,23 @@ export default function CasesPage() {
           loading={creating}
           onSubmit={async (input) => {
             setCreating(true)
-            await createCase(input)
+            const created = await createCase(input)
             setCreating(false)
+            if (created) {
+              setShowNewCase(false)
+              router.push(`/cases/${created.id}`)
+            } else {
+              setBlockedMsg('Could not open this matter. Please try again.')
+            }
           }}
         />
       )}
       {blockedMsg && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.45)' }}>
           <div className="w-full max-w-xs rounded-xl shadow-2xl p-5 text-center" style={{ background: '#fff' }}>
-            <p className="text-sm font-bold mb-1 break-words" style={{ color: 'var(--navy)' }}>Subscribe to open new matters</p>
-            <p className="text-xs mb-4 break-words" style={{ color: 'var(--text-secondary)' }}>New cases are paused until you renew. Everything you already have stays fully visible.</p>
-            <button onClick={() => setBlockedMsg(false)} className="px-4 py-2 rounded text-xs font-medium border" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
+            <p className="text-sm font-bold mb-1 break-words" style={{ color: 'var(--navy)' }}>Notice</p>
+            <p className="text-xs mb-4 break-words" style={{ color: 'var(--text-secondary)' }}>{blockedMsg}</p>
+            <button onClick={() => setBlockedMsg(null)} className="px-4 py-2 rounded text-xs font-medium border" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
               Close
             </button>
           </div>

@@ -13,6 +13,9 @@ const ACTION_LABELS: Record<string, string> = {
   case_created: 'Opened a new matter',
   team_invite_sent: 'Sent a team invite',
   free_access_granted: 'Granted free access',
+  task_submitted: 'Submitted work for review',
+  task_approved: 'Approved submitted work',
+  task_revision_requested: 'Requested a revision',
 }
 
 export default function AdminActivityLogsPage() {

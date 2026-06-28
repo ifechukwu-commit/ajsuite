@@ -19,17 +19,13 @@ export default function DashboardPage() {
   const { user, workspaceId, loading: userLoading, showTrialBanner, trialDaysLeft, isRestricted, isMemberBlocked } = useUser()
   const { cases, loading: casesLoading, createCase } = useCases(workspaceId)
   const [showNewCase, setShowNewCase] = useState(false)
-  const [blockedMsg, setBlockedMsg] = useState(false)
-  const handleNewCase = () => isRestricted() ? setBlockedMsg(true) : setShowNewCase(true)
+  const [blockedMsg, setBlockedMsg] = useState<string | null>(null)
+  const handleNewCase = () => isRestricted() ? setBlockedMsg('New cases are paused until you renew. Everything you already have stays fully visible.') : setShowNewCase(true)
   const [creating, setCreating] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
 
   if (!userLoading && !user) { redirect('/'); return null }
-  // Members of a lapsed firm are redirected — middleware should already have
-  // caught this, this is a client-side safety net only.
   if (!userLoading && isMemberBlocked()) { redirect('/expired'); return null }
-  // Owners are NEVER redirected here, even when their trial/subscription has
-  // lapsed. They stay, read-only, with the banner below explaining why.
 
   const allDeadlines = cases
   .filter(c => c.deadline)
@@ -75,14 +71,14 @@ export default function DashboardPage() {
       {blockedMsg && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.45)' }}>
           <div className="w-full max-w-xs rounded-xl shadow-2xl p-5 text-center" style={{ background: '#fff' }}>
-            <p className="text-sm font-bold mb-1 break-words" style={{ color: 'var(--navy)' }}>Subscribe to open new matters</p>
-            <p className="text-xs mb-4 break-words" style={{ color: 'var(--text-secondary)' }}>New cases are paused until you renew. Everything you already have stays fully visible.</p>
+            <p className="text-sm font-bold mb-1 break-words" style={{ color: 'var(--navy)' }}>Notice</p>
+            <p className="text-xs mb-4 break-words" style={{ color: 'var(--text-secondary)' }}>{blockedMsg}</p>
             <div className="flex flex-col gap-2">
-              <button onClick={() => { setBlockedMsg(false); router.push('/settings') }}
+              <button onClick={() => { setBlockedMsg(null); router.push('/settings') }}
                 className="px-4 py-2 rounded text-xs font-bold" style={{ background: 'var(--gold)', color: 'var(--navy)' }}>
                 Subscribe, ₦8,500 per month
               </button>
-              <button onClick={() => setBlockedMsg(false)} className="px-4 py-2 rounded text-xs font-medium border" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
+              <button onClick={() => setBlockedMsg(null)} className="px-4 py-2 rounded text-xs font-medium border" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
                 Close
               </button>
             </div>
@@ -97,8 +93,14 @@ export default function DashboardPage() {
           loading={creating}
           onSubmit={async (input) => {
             setCreating(true)
-            await createCase(input)
+            const created = await createCase(input)
             setCreating(false)
+            if (created) {
+              setShowNewCase(false)
+              router.push(`/cases/${created.id}`)
+            } else {
+              setBlockedMsg('Could not open this matter. Please try again.')
+            }
           }}
         />
       )}
