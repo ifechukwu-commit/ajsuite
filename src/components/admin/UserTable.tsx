@@ -42,14 +42,14 @@ export default function UserTable({ users, onAction }: Props) {
               <tr key={u.id} className="border-b transition-colors hover:bg-gray-50"
                 style={{ borderColor: 'var(--border)' }}>
                 <td className="px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                  {u.full_name || '—'}
+                  {u.full_name || 'Not set'}
                 </td>
                 <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
                 <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-                  {(u as any).country || '—'}
+                  {(u as any).country || 'Not set'}
                 </td>
                 <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-                  {(u as any).state || '—'}
+                  {(u as any).state || 'Not set'}
                 </td>
                 <td className="px-4 py-3">
                   <span className="text-xs font-bold uppercase tracking-wide px-2 py-1 rounded"
@@ -59,7 +59,7 @@ export default function UserTable({ users, onAction }: Props) {
                 </td>
                 <td className="px-4 py-3 text-xs"
                   style={{ color: days !== null && days <= 3 ? '#DC2626' : 'var(--text-muted)' }}>
-                  {days !== null ? `${days} days` : '—'}
+                  {days !== null ? `${days} days` : 'Not set'}
                 </td>
                 <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                   {new Date(u.created_at).toLocaleDateString('en-GB')}

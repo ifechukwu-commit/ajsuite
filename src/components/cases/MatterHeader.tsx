@@ -21,7 +21,7 @@ export default function MatterHeader({
       <div className="flex-1 min-w-0">
         <h2 className="font-baskerville text-base truncate" style={{ color: 'var(--navy)' }}>{caseData.title}</h2>
         <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-secondary)' }}>
-          {caseData.matter_type} · Client: {caseData.client_name} · Ref: {caseData.id.slice(0,8).toUpperCase()}
+          {caseData.matter_type}, Client: {caseData.client_name}, Ref: {caseData.id.slice(0,8).toUpperCase()}
         </p>
       </div>
 
@@ -45,7 +45,7 @@ export default function MatterHeader({
         <button onClick={onUpload}
           className="px-3 py-1.5 rounded text-xs font-medium text-white transition-opacity hover:opacity-80"
           style={{ background: 'var(--navy)' }}>
-          + Document
+          Document
         </button>
         <button onClick={onDelete}
           className="px-3 py-1.5 rounded text-xs font-medium border transition-colors"

@@ -41,7 +41,7 @@ export default function AdminActivityLogsPage() {
             <div key={log.id} className="px-5 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                 <p className="text-sm break-words" style={{ color: 'var(--text-primary)' }}>
-                  <span className="font-medium">{log.email ?? 'Unknown'}</span> — {ACTION_LABELS[log.action] ?? log.action}
+                  <span className="font-medium">{log.email ?? 'Unknown'}</span>, {ACTION_LABELS[log.action] ?? log.action}
                 </p>
                 <p className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
                   {new Date(log.created_at).toLocaleString('en-GB')}

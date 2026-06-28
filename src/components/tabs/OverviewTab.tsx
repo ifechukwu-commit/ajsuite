@@ -1,8 +1,21 @@
+'use client'
+import { useState } from 'react'
+import { useCaseNotes } from '@/hooks/useCaseNotes'
 import type { Case, Document } from '@/types'
 
-interface Props { caseData: Case; documents: Document[] }
+interface Props { caseData: Case; documents: Document[]; workspaceId: string | null; isRestricted: boolean; onBlocked: (msg: string) => void }
 
-export default function OverviewTab({ caseData, documents }: Props) {
+export default function OverviewTab({ caseData, documents, workspaceId, isRestricted, onBlocked }: Props) {
+  const { notes, loading: notesLoading, addNote } = useCaseNotes(caseData.id, workspaceId)
+  const [draft, setDraft] = useState('')
+
+  const handleAddNote = async () => {
+    if (!draft.trim()) return
+    if (isRestricted) { onBlocked('Adding new case notes is paused until you renew.'); return }
+    await addNote(draft)
+    setDraft('')
+  }
+
   const deadline = caseData.deadline
     ? new Date(caseData.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : null
@@ -40,13 +53,44 @@ export default function OverviewTab({ caseData, documents }: Props) {
                 {new Date(caseData.deadline!).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
               </p>
               <p className="text-xs break-words" style={{ color: 'var(--text-muted)' }}>
-                {deadline} · {daysLeft !== null ? `${daysLeft} days remaining` : ''}
+                {deadline}, {daysLeft !== null ? `${daysLeft} days remaining` : ''}
               </p>
             </>
           ) : (
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No deadline set</p>
           )}
         </Card>
+      </div>
+
+      <div className="rounded-lg border p-4 sm:p-5 min-w-0" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+        <h3 className="text-xs font-bold uppercase tracking-widest mb-1 break-words" style={{ color: 'var(--text-muted)' }}>Case Notes</h3>
+        <p className="text-xs mb-3 break-words" style={{ color: 'var(--text-muted)' }}>
+          A permanent record for this matter, client instructions, court outcomes, anything worth remembering. Separate from Team Discussion, which is for day-to-day collaboration.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
+          <input value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddNote()}
+            placeholder="e.g. Client instructed settlement"
+            className="flex-1 px-3 py-2 rounded border text-sm min-w-0" style={{ borderColor: 'var(--border)' }} />
+          <button onClick={handleAddNote} className="text-xs px-4 py-2 rounded font-bold text-white flex-shrink-0" style={{ background: 'var(--navy)' }}>
+            Add Note
+          </button>
+        </div>
+
+        {notesLoading ? (
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading notes...</p>
+        ) : notes.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No notes recorded yet.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {notes.map(note => (
+              <div key={note.id} className="px-3 py-2 rounded border min-w-0" style={{ borderColor: 'var(--border)' }}>
+                <p className="text-sm break-words whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>{note.body}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{new Date(note.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

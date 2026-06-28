@@ -12,9 +12,8 @@ import DeadlinesBanner from '@/components/layout/DeadlinesBanner'
 import MatterHeader from '@/components/cases/MatterHeader'
 import OverviewTab from '@/components/tabs/OverviewTab'
 import DocumentsTab from '@/components/tabs/DocumentsTab'
-import TasksTab from '@/components/tabs/TasksTab'
+import TeamCollaborationTab from '@/components/tabs/TeamCollaborationTab'
 import TimelineTab from '@/components/tabs/TimelineTab'
-import NotesTab from '@/components/tabs/NotesTab'
 import RightPanel from '@/components/ui/RightPanel'
 import EditCaseModal from '@/components/cases/EditCaseModal'
 import ConfirmDeleteModal from '@/components/cases/ConfirmDeleteModal'
@@ -22,14 +21,13 @@ import ExportModal from '@/components/export/ExportModal'
 import NotificationsPanel from '@/components/notifications/NotificationsPanel'
 import type { Case, TimelineEvent, Deadline } from '@/types'
 
-type Tab = 'overview' | 'documents' | 'tasks' | 'timeline' | 'notes'
+type Tab = 'overview' | 'documents' | 'collaboration' | 'timeline'
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'overview', label: 'Overview' },
   { key: 'documents', label: 'Documents' },
-  { key: 'tasks', label: 'Tasks' },
+  { key: 'collaboration', label: 'Team Collaboration' },
   { key: 'timeline', label: 'Timeline' },
-  { key: 'notes', label: 'Notes' },
 ]
 
 export default function CasePage() {
@@ -56,6 +54,7 @@ export default function CasePage() {
   const [showDelete, setShowDelete] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [blockedMsg, setBlockedMsg] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
@@ -69,7 +68,12 @@ export default function CasePage() {
 
   useEffect(() => {
     const found = cases.find(c => c.id === caseId)
-    if (found) setCaseData(found)
+    if (found) { setCaseData(found); return }
+    // Not in the firm-scoped list — likely a session member with
+    // temporary access. RLS allows them to see this one case directly.
+    supabase.from('cases').select('*').eq('id', caseId).single().then(({ data }) => {
+      if (data) setCaseData(data)
+    })
   }, [cases, caseId])
 
   useEffect(() => {
@@ -116,9 +120,7 @@ export default function CasePage() {
   return (
     <div className="flex flex-col h-screen">
       {showTrialBanner() && <TrialBanner daysLeft={trialDaysLeft()} />}
-      {isRestricted() && (
-        <div className="px-4 pt-3"><RestrictedBanner onUpgrade={() => router.push('/settings')} /></div>
-      )}
+      {isRestricted() && <RestrictedBanner onUpgrade={() => router.push('/settings')} />}
       <DeadlinesBanner deadlines={allDeadlines} />
 
       <div className="flex flex-1 overflow-hidden">
@@ -157,16 +159,24 @@ export default function CasePage() {
 
           <div className="flex flex-1 overflow-hidden">
             <div className="flex-1 overflow-y-auto min-w-0">
-              {activeTab === 'overview' && <OverviewTab caseData={caseData} documents={documents} />}
+              {activeTab === 'overview' && <OverviewTab caseData={caseData} documents={documents} workspaceId={workspaceId} isRestricted={isRestricted()} onBlocked={setBlockedMsg} />}
               {activeTab === 'documents' && (
                 <DocumentsTab
                   documents={documents} uploading={uploading} error={docError}
-                  onUpload={uploadDocument} onDelete={deleteDocument} onPreview={previewDocument} onDownload={downloadDocument}
+                  onUpload={async (file) => isRestricted() ? setBlockedMsg('Uploading new documents is paused until you renew.') : uploadDocument(file)}
+                  onDelete={deleteDocument} onPreview={previewDocument} onDownload={downloadDocument}
                 />
               )}
-              {activeTab === 'tasks' && <TasksTab caseId={caseId} workspaceId={workspaceId} />}
+              {activeTab === 'collaboration' && (
+                <TeamCollaborationTab
+                  caseId={caseId} workspaceId={workspaceId} currentUserId={user?.id ?? ''} isOwner={!!caseData && caseData.user_id === workspaceId}
+                  documents={documents} onDownloadDocument={downloadDocument} onPreviewDocument={previewDocument}
+                  onUploadDocument={async (file: File) => isRestricted() ? setBlockedMsg('Uploading new files is paused until you renew.') : uploadDocument(file)}
+                  onDeleteDocument={deleteDocument}
+                  isRestricted={isRestricted()} onBlocked={setBlockedMsg}
+                />
+              )}
               {activeTab === 'timeline' && <TimelineTab events={timeline} />}
-              {activeTab === 'notes' && <NotesTab caseId={caseId} workspaceId={workspaceId} />}
             </div>
 
             {/* Right panel — hidden on mobile entirely, visible md and up */}
@@ -189,6 +199,23 @@ export default function CasePage() {
         <ExportModal caseTitle={caseData.title} defaultReviewedBy={reviewedBy()} caseId={caseId} onClose={() => setShowExport(false)} />
       )}
       {showNotifications && <NotificationsPanel onClose={() => setShowNotifications(false)} />}
+      {blockedMsg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.45)' }}>
+          <div className="w-full max-w-xs rounded-xl shadow-2xl p-5 text-center" style={{ background: '#fff' }}>
+            <p className="text-sm font-bold mb-1 break-words" style={{ color: 'var(--navy)' }}>Subscribe to continue</p>
+            <p className="text-xs mb-4 break-words" style={{ color: 'var(--text-secondary)' }}>{blockedMsg}</p>
+            <div className="flex flex-col gap-2">
+              <button onClick={() => { setBlockedMsg(null); router.push('/settings') }}
+                className="px-4 py-2 rounded text-xs font-bold" style={{ background: 'var(--gold)', color: 'var(--navy)' }}>
+                Subscribe, ₦8,500 per month
+              </button>
+              <button onClick={() => setBlockedMsg(null)} className="px-4 py-2 rounded text-xs font-medium border" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -50,7 +50,7 @@ export default function DocumentsTab({ documents, uploading, error, onUpload, on
               <path d="M16 22V10M10 16l6-6 6 6" /><rect x="4" y="4" width="24" height="24" rx="4" />
             </svg>
             <p className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Drop files here or click to upload</p>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>PDF, DOC, DOCX, or TXT · Maximum 10MB per file</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>PDF, DOC, DOCX, or TXT, Maximum 10MB per file</p>
           </>
         )}
       </div>
@@ -73,7 +73,7 @@ export default function DocumentsTab({ documents, uploading, error, onUpload, on
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium break-words" style={{ color: 'var(--text-primary)' }}>{doc.file_name}</p>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                      {new Date(doc.created_at).toLocaleDateString('en-GB')} · {formatSize(doc.file_size)}
+                      {new Date(doc.created_at).toLocaleDateString('en-GB')}, {formatSize(doc.file_size)}
                     </p>
                   </div>
                 </div>

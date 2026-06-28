@@ -75,21 +75,21 @@ export default function HeroPage() {
           </p>
           <h1 className="font-baskerville text-4xl md:text-5xl text-white leading-tight mb-6"
             style={{ lineHeight: '1.15' }}>
-            Every matter.<br />
-            Every document.<br />
-            <span style={{ color: 'rgba(255,255,255,0.5)' }}>Always ready.</span>
+            Every Matter.<br />
+            Every Document.<br />
+            <span style={{ color: 'rgba(255,255,255,0.5)' }}>Always Ready.</span>
           </h1>
           <p className="text-sm leading-relaxed mb-8 max-w-sm"
             style={{ color: 'rgba(255,255,255,0.55)' }}>
-            Built for solo counsel and small chambers. Organise matters, track every deadline, and manage every case in one place.
+            Manage cases, documents, deadlines and team collaboration in one secure workspace built for solo lawyers and small chambers.
           </p>
 
          {/* Feature list */}
 <div className="flex flex-col gap-3 mb-8">
   {[
-    'Deadline reminders that follow every hearing and filing date',
-    'Full case history, documents, and client records',
-    'Invite your team - everyone sees the same workspace',
+    'Track hearings, filings and deadlines with automatic reminders',
+    'Keep every document, note and case history organised',
+    'Collaborate with your team from a shared workspace',
   ].map((item, i) => (
     <div key={i} className="flex items-start gap-3">
       <div
@@ -116,7 +116,7 @@ export default function HeroPage() {
             Continue with Google
           </button>
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
-            30-day free trial · No credit card required
+            30-day free trial • No credit card required
           </p>
         </div>
 
@@ -130,7 +130,7 @@ export default function HeroPage() {
       <footer className="px-8 py-5 flex items-center justify-between"
         style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <p className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
-          This platform is a legal productivity tool and does not constitute legal advice.
+          AJ Suite is a legal practice management platform. It does not provide legal advice.
         </p>
         <a href="mailto:ajsuitesupport@gmail.com"
           className="text-xs transition-colors"

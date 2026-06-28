@@ -73,21 +73,21 @@ const stats = {
         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</p>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             {cards.map((c, i) => (
-              <div key={i} className="rounded-lg border p-5" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                <p className="font-baskerville text-3xl font-bold" style={{ color: c.color }}>{c.value}</p>
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{c.label}</p>
+              <div key={i} className="rounded-lg border p-5 min-w-0" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                <p className="font-baskerville text-3xl font-bold break-words" style={{ color: c.color }}>{c.value}</p>
+                <p className="text-xs mt-1 break-words" style={{ color: 'var(--text-muted)' }}>{c.label}</p>
               </div>
             ))}
           </div>
 
-          <div className="flex gap-3 mb-6">
+          <div className="flex flex-wrap gap-3 mb-6">
             <Link href="/admin/users" className="px-5 py-2.5 rounded-lg text-sm font-bold text-white" style={{ background: 'var(--navy)' }}>
               Manage Users
             </Link>
             <Link href="/admin/workspaces" className="px-5 py-2.5 rounded-lg text-sm font-bold border" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
-              Workspaces & Free Access
+              Workspaces
             </Link>
             <Link href="/admin/notifications" className="px-5 py-2.5 rounded-lg text-sm font-bold border" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
               Send Notification

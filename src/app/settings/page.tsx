@@ -69,8 +69,8 @@ export default function SettingsPage() {
       user?.plan === 'admin'
         ? 'Admin access'
         : user?.plan === 'solo' || user?.plan === 'chamber'
-          ? 'Active — paid'
-          : `Free trial — ${trialDaysLeft()} days left`
+          ? 'Active, paid'
+          : `Free trial, ${trialDaysLeft()} days left`
     )
   : 'Subscription ended'
 
@@ -111,12 +111,12 @@ export default function SettingsPage() {
             </div>
           ) : (
             <>
-              <Row label="Name" value={localName || user?.full_name || '—'} />
-              <Row label="Email" value={user?.email || '—'} />
-              <Row label="Firm" value={localFirm || user?.firm_name || '—'} />
+              <Row label="Name" value={localName || user?.full_name || 'Not set'} />
+              <Row label="Email" value={user?.email || 'Not set'} />
+              <Row label="Firm" value={localFirm || user?.firm_name || 'Not set'} />
               <button onClick={() => setEditingProfile(true)}
                 className="text-xs font-medium mt-2" style={{ color: 'var(--navy)' }}>
-                Edit Name / Firm →
+                Edit Name and Firm
               </button>
             </>
           )}
@@ -140,13 +140,12 @@ export default function SettingsPage() {
                 {subscribing
                   ? 'Redirecting...'
                   : isActive() && (user?.plan === 'solo' || user?.plan === 'chamber')
-                    ? 'Renew - ₦8,500/month'
-                    : 'Subscribe - ₦8,500/month'}
+                    ? 'Renew, ₦8,500 per month'
+                    : 'Subscribe, ₦8,500 per month'}
               </button>
             )}
           </div>
           {error && <p className="text-xs break-words" style={{ color: '#9B1C1C' }}>{error}</p>}
-          <Link href="/team" className="text-xs font-medium" style={{ color: 'var(--navy)' }}>Manage team members →</Link>
         </Section>
 
         <Section title="Appearance">

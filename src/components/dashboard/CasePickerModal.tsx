@@ -21,7 +21,7 @@ export default function CasePickerModal({ cases, destination, onClose }: Props) 
 
         <div className="flex-1 overflow-y-auto scrollbar-thin flex flex-col gap-2">
           {cases.length === 0 ? (
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No cases yet — open a case first.</p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No cases yet, open a case first.</p>
           ) : (
             cases.map(c => (
               <button key={c.id}

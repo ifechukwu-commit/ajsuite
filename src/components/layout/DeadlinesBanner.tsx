@@ -21,7 +21,7 @@ export default function DeadlinesBanner({ deadlines }: Props) {
         <div key={d.id} className="flex items-center gap-2 flex-shrink-0">
           <div className="w-1.5 h-1.5 rounded-full flex-shrink-0"
             style={{ background: d.is_critical ? '#F87171' : '#FCD34D' }} />
-          <span>{d.label} — {new Date(d.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          <span>{d.label}, {new Date(d.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
         </div>
       ))}
     </div>

@@ -11,25 +11,18 @@ export async function GET(request: Request) {
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        // Explicit override for flows like joining a matter's secure
+        // session link — skip every other redirect rule entirely.
+        const next = searchParams.get('next')
+        if (next) {
+          return NextResponse.redirect(`${origin}${next}`)
+        }
+
         // Wait briefly for DB trigger to create user row
         await new Promise(r => setTimeout(r, 1000))
 
         const serviceClient = createServiceClient()
         serviceClient.from('login_logs').insert({ user_id: user.id, email: user.email }).then(() => {})
-
-        // Catch invites sent AFTER this person already had an account —
-        // the signup trigger only runs once, so this is the fallback.
-        const { data: pendingInvite } = await serviceClient
-          .from('team_invites')
-          .select('*')
-          .eq('email', user.email)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single()
-
-        if (pendingInvite) {
-  return NextResponse.redirect(`${origin}/team/invite`)
-}
 
         const { data: profile } = await supabase
           .from('users')
@@ -37,24 +30,10 @@ export async function GET(request: Request) {
           .eq('id', user.id)
           .single()
 
-        // Anyone invited in (owner_id set) never goes through trial/claim
+        // Anyone with an owner_id never goes through trial/claim
         // onboarding — that only applies to new independent owners.
         if (profile?.owner_id) {
-          // check if user has pending invite BEFORE routing
-const serviceClient = createServiceClient()
-
-const { data: pendingInvite } = await serviceClient
-  .from('team_invites')
-  .select('id')
-  .eq('email', user.email)
-  .limit(1)
-  .maybeSingle()
-
-if (pendingInvite) {
-  return NextResponse.redirect(`${origin}/team/invite`)
-}
-
-return NextResponse.redirect(`${origin}/dashboard`)
+          return NextResponse.redirect(`${origin}/dashboard`)
         }
 
         if (profile?.plan === 'admin') {

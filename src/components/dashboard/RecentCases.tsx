@@ -20,7 +20,7 @@ export default function RecentCases({ cases, onNewCase }: Props) {
         <EmptyState
           title="No matters yet"
           description="Open your first case file to get started."
-          action={{ label: '+ Open New Matter', onClick: onNewCase }}
+          action={{ label: 'Open New Matter', onClick: onNewCase }}
         />
       ) : (
         recent.map(c => <CaseCard key={c.id} caseData={c} />)

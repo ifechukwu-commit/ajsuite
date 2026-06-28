@@ -25,23 +25,23 @@ export default function AdminNotificationsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-baskerville text-xl mb-1" style={{ color: 'var(--navy)' }}>Send Notification</h1>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+    <div className="p-4 sm:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <div className="min-w-0">
+          <h1 className="font-baskerville text-xl mb-1 break-words" style={{ color: 'var(--navy)' }}>Send Notification</h1>
+          <p className="text-sm break-words" style={{ color: 'var(--text-secondary)' }}>
             Broadcast announcements, updates, or renewal reminders to your users.
           </p>
         </div>
         <button onClick={() => setShowModal(true)}
-          className="px-5 py-2.5 rounded-lg text-sm font-bold text-white transition-opacity hover:opacity-80"
+          className="px-5 py-2.5 rounded-lg text-sm font-bold text-white transition-opacity hover:opacity-80 self-start sm:self-auto flex-shrink-0"
           style={{ background: 'var(--navy)' }}>
-          + New Notification
+          New Notification
         </button>
       </div>
 
       {sent.length === 0 ? (
-        <div className="rounded-lg border p-12 text-center" style={{ background: '#fff', borderColor: 'var(--border)' }}>
+        <div className="rounded-lg border p-8 sm:p-12 text-center" style={{ background: '#fff', borderColor: 'var(--border)' }}>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No notifications sent this session.</p>
         </div>
       ) : (
@@ -50,12 +50,12 @@ export default function AdminNotificationsPage() {
             <h3 className="font-baskerville text-sm" style={{ color: 'var(--navy)' }}>Sent This Session</h3>
           </div>
           {sent.map((s, i) => (
-            <div key={i} className="flex items-center gap-4 px-5 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
-              <div className="flex-1">
-                <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{s.title}</p>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>To: {s.to}</p>
+            <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-2 px-5 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium break-words" style={{ color: 'var(--text-primary)' }}>{s.title}</p>
+                <p className="text-xs mt-0.5 break-words" style={{ color: 'var(--text-muted)' }}>To: {s.to}</p>
               </div>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.date}</p>
+              <p className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{s.date}</p>
             </div>
           ))}
         </div>

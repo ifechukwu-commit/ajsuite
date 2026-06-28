@@ -10,9 +10,11 @@ import StatusBadge from '@/components/cases/StatusBadge'
 import EmptyState from '@/components/ui/EmptyState'
 
 export default function CasesPage() {
-  const { user, workspaceId, loading: userLoading, isMemberBlocked } = useUser()
+  const { user, workspaceId, loading: userLoading, isMemberBlocked, isRestricted } = useUser()
   const { cases, loading: casesLoading, createCase } = useCases(workspaceId)
   const [showNewCase, setShowNewCase] = useState(false)
+  const [blockedMsg, setBlockedMsg] = useState(false)
+  const handleNewCase = () => isRestricted() ? setBlockedMsg(true) : setShowNewCase(true)
   const [creating, setCreating] = useState(false)
 
   if (!userLoading && !user) { redirect('/'); return null }
@@ -20,14 +22,14 @@ export default function CasesPage() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar cases={cases} onNewCase={() => setShowNewCase(true)} />
+      <Sidebar cases={cases} onNewCase={handleNewCase} />
       <main className="flex-1 overflow-y-auto scrollbar-thin p-4 sm:p-6 pl-20 md:pl-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <h1 className="font-baskerville text-xl break-words" style={{ color: 'var(--navy)' }}>All Cases</h1>
-          <button onClick={() => setShowNewCase(true)}
+          <button onClick={handleNewCase}
             className="px-4 py-2 rounded text-xs font-bold text-white transition-opacity hover:opacity-80 self-start sm:self-auto"
             style={{ background: 'var(--navy)' }}>
-            + New Matter
+            New Matter
           </button>
         </div>
 
@@ -42,7 +44,7 @@ export default function CasesPage() {
                 className="block rounded-lg border p-4 transition-colors min-w-0"
                 style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                 <p className="text-sm font-medium mb-1 break-words" style={{ color: 'var(--text-primary)' }}>{c.title}</p>
-                <p className="text-xs mb-2 break-words" style={{ color: 'var(--text-muted)' }}>{c.matter_type} · {c.client_name}</p>
+                <p className="text-xs mb-2 break-words" style={{ color: 'var(--text-muted)' }}>{c.matter_type}, {c.client_name}</p>
                 <StatusBadge status={c.status} size="sm" />
               </Link>
             ))}
@@ -60,6 +62,17 @@ export default function CasesPage() {
             setCreating(false)
           }}
         />
+      )}
+      {blockedMsg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.45)' }}>
+          <div className="w-full max-w-xs rounded-xl shadow-2xl p-5 text-center" style={{ background: '#fff' }}>
+            <p className="text-sm font-bold mb-1 break-words" style={{ color: 'var(--navy)' }}>Subscribe to open new matters</p>
+            <p className="text-xs mb-4 break-words" style={{ color: 'var(--text-secondary)' }}>New cases are paused until you renew. Everything you already have stays fully visible.</p>
+            <button onClick={() => setBlockedMsg(false)} className="px-4 py-2 rounded text-xs font-medium border" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
+              Close
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )

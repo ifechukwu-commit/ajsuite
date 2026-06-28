@@ -16,7 +16,7 @@ export default function CaseCard({ caseData }: Props) {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{caseData.title}</p>
         <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>
-          Client: {caseData.client_name} · {caseData.matter_type}
+          Client: {caseData.client_name}, {caseData.matter_type}
         </p>
       </div>
       <StatusBadge status={caseData.status} />

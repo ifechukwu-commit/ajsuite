@@ -10,7 +10,7 @@ export default function ExpiredPage() {
       <h1 className="font-baskerville text-3xl text-white mb-3">Access Paused</h1>
       <p className="text-sm mb-8 max-w-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
         Your firm's subscription has lapsed. Only the workspace owner can renew it.
-        Once renewed, your access opens back up automatically — no action needed on your end.
+        Once renewed, your access opens back up automatically. No action needed on your end.
       </p>
       <a href="mailto:ajsuitesupport@gmail.com?subject=AJ Suite Access Paused"
         className="px-6 py-3 rounded-lg text-sm font-bold transition-opacity hover:opacity-80"

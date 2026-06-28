@@ -32,6 +32,16 @@ export async function GET(request: Request) {
 
     if (!INTERVALS.includes(daysLeft)) continue
 
+    // Deadline reminders are "new work" — paused for a lapsed subscription,
+    // same as creating cases or assigning tasks would be.
+    const { data: owner } = await supabase
+      .from('users').select('plan, paid_until, trial_claimed, trial_start').eq('id', c.user_id).single()
+    if (!owner) continue
+    const ownerActive = owner.plan === 'admin'
+      || ((owner.plan === 'solo' || owner.plan === 'chamber') && (!owner.paid_until || new Date(owner.paid_until) > new Date()))
+      || (owner.plan === 'trial' && owner.trial_claimed && (Date.now() - new Date(owner.trial_start).getTime()) < 30 * 86400000)
+    if (!ownerActive) continue
+
     // Dedupe — don't re-notify if this exact reminder already went out today.
     // The title doubles as the dedupe key, so it has to read naturally too.
     const title = `Deadline Reminder: ${c.title} (${daysLeft}d)`

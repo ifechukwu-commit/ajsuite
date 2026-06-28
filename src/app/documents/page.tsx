@@ -75,7 +75,7 @@ export default function AllDocumentsPage() {
                     {caseTitle(doc.case_id)}
                   </Link>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    {new Date(doc.created_at).toLocaleDateString('en-GB')} · {formatSize(doc.file_size)}
+                    {new Date(doc.created_at).toLocaleDateString('en-GB')}, {formatSize(doc.file_size)}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 flex-shrink-0">

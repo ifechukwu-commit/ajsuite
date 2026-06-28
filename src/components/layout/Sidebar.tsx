@@ -81,10 +81,7 @@ export default function Sidebar({ cases, onNewCase, activeCaseId }: Props) {
             { href: '/dashboard', label: 'Dashboard', icon: 'M8 1L1 7v8h5v-5h4v5h5V7L8 1z' },
             { href: '/cases', label: 'Cases', icon: 'M3 2h8l3 3v9H3zM9 2v3h3' },
             { href: '/documents', label: 'Documents', icon: 'M3 2h7l3 3v9H3z M6 7h4 M6 9.5h4 M6 12h2' },
-            { href: '/tasks', label: 'Tasks', icon: 'M3 3h10v10H3z M5.5 8l1.5 1.5L10.5 6' },
             { href: '/calendar', label: 'Calendar', icon: 'M3 2h10v2H3zM2 5h12v9H2zM4 7h2v2H4zM7 7h2v2H7zM10 7h2v2h-2z' },
-            { href: '/notes', label: 'Notes', icon: 'M4 2h8v12l-4-2-4 2z' },
-            { href: '/team', label: 'Team', icon: 'M5 7a2 2 0 100-4 2 2 0 000 4zM11 7a2 2 0 100-4 2 2 0 000 4zM1 13c0-2.2 1.8-4 4-4s4 1.8 4 4M7 13c0-1.8 1.5-3.3 3.3-3.3 1.8 0 3.3 1.5 3.3 3.3' },
             { href: '/settings', label: 'Settings', icon: 'M8 5a3 3 0 100 6 3 3 0 000-6zM8 1v2M8 13v2M2 8H1M15 8h-1M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4' },
           ].map(({ href, label, icon }) => (
             <Link key={href} href={href}
@@ -163,14 +160,7 @@ export default function Sidebar({ cases, onNewCase, activeCaseId }: Props) {
           ))}
         </div>
 
-        {/* New Matter Button */}
-        <div className="px-3 pb-3">
-          <button onClick={onNewCase}
-            className="w-full py-2 rounded-md text-xs font-bold cursor-pointer transition-opacity hover:opacity-80"
-            style={{ background: 'var(--gold)', color: 'var(--navy)' }}>
-            + New Matter
-          </button>
-        </div>
+         {/* Footer */}
 
         {/* Footer */}
         <div className="px-5 py-4 border-t" style={{ borderColor: 'var(--navy-muted)', background: 'var(--navy)' }}>

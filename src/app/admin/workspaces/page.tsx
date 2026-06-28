@@ -58,12 +58,12 @@ export default function AdminWorkspacesPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium break-words" style={{ color: 'var(--text-primary)' }}>{o.firm_name || o.full_name || o.email}</p>
                   <p className="text-xs mt-0.5 break-words" style={{ color: 'var(--text-muted)' }}>
-                    {o.email} · {o.member_count ?? 0} member{o.member_count === 1 ? '' : 's'}
+                    {o.email}, {o.member_count ?? 0} member{o.member_count === 1 ? '' : 's'}
                   </p>
                 </div>
                 <span className="text-xs font-bold uppercase tracking-wide px-2 py-1 rounded flex-shrink-0 self-start break-words"
                   style={{ background: s.locked ? '#FEE2E2' : '#D8F3DC', color: s.locked ? '#9B1C1C' : '#2D6A4F', fontSize: '9px' }}>
-                  {s.locked ? 'Locked — ' : ''}{s.label}
+                  {s.locked ? 'Locked, ' : ''}{s.label}
                 </span>
               </div>
             )

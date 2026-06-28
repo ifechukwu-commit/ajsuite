@@ -67,7 +67,7 @@ export default function SendNotificationModal({ users, onClose, onSend }: Props)
             <select value={userId} onChange={e => setUserId(e.target.value)}
               className="w-full px-3 py-2 rounded border text-sm outline-none"
               style={{ borderColor: 'var(--border)', fontFamily: 'var(--font-inter)' }}>
-              <option value="">— Select —</option>
+              <option value="">Select</option>
               {users.map(u => <option key={u.id} value={u.id}>{u.full_name || u.email}</option>)}
             </select>
           </div>

@@ -51,7 +51,7 @@ export default function CalendarPage() {
                       style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                       <div>
                         <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{c.title}</p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{c.matter_type} · {c.client_name}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{c.matter_type}, {c.client_name}</p>
                       </div>
                       <span className="text-xs font-bold uppercase px-2 py-1 rounded flex-shrink-0"
                         style={{ background: c.status === 'Urgent' ? '#FEE2E2' : '#FFF3CD', color: c.status === 'Urgent' ? '#9B1C1C' : '#7B5E00', fontSize: '9px' }}>

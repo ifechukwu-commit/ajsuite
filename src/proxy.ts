@@ -4,7 +4,7 @@ import { ADMIN_EMAILS } from '@/lib/constants'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PROTECTED = ['/dashboard', '/cases', '/history', '/admin', '/claim', '/calendar', '/team', '/settings', '/documents', '/tasks', '/notes']
+const PROTECTED = ['/dashboard', '/cases', '/history', '/admin', '/claim', '/calendar', '/settings', '/documents']
 
 export async function proxy(request: NextRequest) {
   const response = NextResponse.next({
@@ -50,5 +50,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/cases/:path*', '/history/:path*', '/admin/:path*', '/claim/:path*', '/calendar/:path*', '/team/:path*', '/settings/:path*', '/documents/:path*', '/tasks/:path*', '/notes/:path*'],
+  matcher: ['/dashboard/:path*', '/cases/:path*', '/history/:path*', '/admin/:path*', '/claim/:path*', '/calendar/:path*', '/settings/:path*', '/documents/:path*'],
 }

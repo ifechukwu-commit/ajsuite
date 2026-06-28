@@ -12,12 +12,15 @@ import NewCaseModal from '@/components/cases/NewCaseModal'
 import { redirect } from 'next/navigation'
 import NotificationsPanel from '@/components/notifications/NotificationsPanel'
 import ReviewPopup from '@/components/dashboard/ReviewPopup'
+import WelcomeTour from '@/components/dashboard/WelcomeTour'
 
 export default function DashboardPage() {
   const router = useRouter()
   const { user, workspaceId, loading: userLoading, showTrialBanner, trialDaysLeft, isRestricted, isMemberBlocked } = useUser()
   const { cases, loading: casesLoading, createCase } = useCases(workspaceId)
   const [showNewCase, setShowNewCase] = useState(false)
+  const [blockedMsg, setBlockedMsg] = useState(false)
+  const handleNewCase = () => isRestricted() ? setBlockedMsg(true) : setShowNewCase(true)
   const [creating, setCreating] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
 
@@ -43,12 +46,10 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-screen">
       {showTrialBanner() && <TrialBanner daysLeft={trialDaysLeft()} />}
-      {isRestricted() && (
-        <div className="px-4 pt-3"><RestrictedBanner onUpgrade={() => router.push('/settings')} /></div>
-      )}
+      {isRestricted() && <RestrictedBanner onUpgrade={() => router.push('/settings')} />}
       <DeadlinesBanner deadlines={allDeadlines} />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar cases={cases} onNewCase={() => setShowNewCase(true)} />
+        <Sidebar cases={cases} onNewCase={handleNewCase} />
         <main className="flex-1 overflow-hidden flex flex-col">
           <div className="flex items-center justify-end px-6 py-3 border-b flex-shrink-0" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
             <button onClick={() => setShowNotifications(true)}
@@ -66,12 +67,30 @@ export default function DashboardPage() {
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</p>
             </div>
           ) : user ? (
-            <DashboardHome user={user} cases={cases} onNewCase={() => setShowNewCase(true)} />
+            <DashboardHome user={user} cases={cases} onNewCase={handleNewCase} />
           ) : null}
         </main>
       </div>
       {showNotifications && <NotificationsPanel onClose={() => setShowNotifications(false)} />}
-      {user && <ReviewPopup userId={user.id} lastPromptAt={user.last_review_prompt_at} />}
+      {blockedMsg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.45)' }}>
+          <div className="w-full max-w-xs rounded-xl shadow-2xl p-5 text-center" style={{ background: '#fff' }}>
+            <p className="text-sm font-bold mb-1 break-words" style={{ color: 'var(--navy)' }}>Subscribe to open new matters</p>
+            <p className="text-xs mb-4 break-words" style={{ color: 'var(--text-secondary)' }}>New cases are paused until you renew. Everything you already have stays fully visible.</p>
+            <div className="flex flex-col gap-2">
+              <button onClick={() => { setBlockedMsg(false); router.push('/settings') }}
+                className="px-4 py-2 rounded text-xs font-bold" style={{ background: 'var(--gold)', color: 'var(--navy)' }}>
+                Subscribe, ₦8,500 per month
+              </button>
+              <button onClick={() => setBlockedMsg(false)} className="px-4 py-2 rounded text-xs font-medium border" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {user && !user.onboarding_completed && <WelcomeTour userId={user.id} workspaceName={user.firm_name || user.full_name || 'there'} />}
+      {user && user.onboarding_completed && <ReviewPopup userId={user.id} lastPromptAt={user.last_review_prompt_at} accountCreatedAt={user.created_at} />}
       {showNewCase && (
         <NewCaseModal
           onClose={() => setShowNewCase(false)}

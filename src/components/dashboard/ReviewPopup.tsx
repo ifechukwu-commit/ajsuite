@@ -5,26 +5,32 @@ import { createClient } from '@/lib/supabase/client'
 interface Props {
   userId: string
   lastPromptAt: string | null
+  accountCreatedAt: string
 }
 
 const PROMPT_INTERVAL_MS = 3.5 * 24 * 60 * 60 * 1000 // roughly twice a week
+const FIRST_PROMPT_DELAY_MS = 14 * 24 * 60 * 60 * 1000 // never on day one — feels desperate
 
-export default function ReviewPopup({ userId, lastPromptAt }: Props) {
+export default function ReviewPopup({ userId, lastPromptAt, accountCreatedAt }: Props) {
   const [show, setShow] = useState(false)
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [note, setNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
+    const accountAgeMs = Date.now() - new Date(accountCreatedAt).getTime()
+    if (accountAgeMs < FIRST_PROMPT_DELAY_MS) return // too new, never on day one
+
     const due = !lastPromptAt || (Date.now() - new Date(lastPromptAt).getTime() > PROMPT_INTERVAL_MS)
     if (due) {
       const timer = setTimeout(() => setShow(true), 1500) // small delay so it doesn't fight the page load
       return () => clearTimeout(timer)
     }
-  }, [lastPromptAt])
+  }, [lastPromptAt, accountCreatedAt])
 
   const markPrompted = async () => {
     await supabase.from('users').update({ last_review_prompt_at: new Date().toISOString() }).eq('id', userId)
@@ -38,7 +44,12 @@ export default function ReviewPopup({ userId, lastPromptAt }: Props) {
   const handleSubmit = async () => {
     if (rating === 0) return
     setSubmitting(true)
-    await supabase.from('app_reviews').insert({ user_id: userId, rating, note: note.trim() || null })
+    const { error } = await supabase.from('app_reviews').insert({ user_id: userId, rating, note: note.trim() || null })
+    if (error) {
+      setSubmitting(false)
+      setSubmitError(error.message)
+      return
+    }
     await markPrompted()
     setSubmitting(false)
     setSubmitted(true)
@@ -76,6 +87,8 @@ export default function ReviewPopup({ userId, lastPromptAt }: Props) {
               rows={3}
               className="w-full px-3 py-2 rounded text-sm border outline-none resize-none mb-4 break-words"
               style={{ borderColor: 'var(--border)' }} />
+
+            {submitError && <p className="text-xs mb-3 break-words" style={{ color: '#9B1C1C' }}>{submitError}</p>}
 
             <div className="flex flex-col sm:flex-row gap-2">
               <button onClick={handleSubmit} disabled={rating === 0 || submitting}

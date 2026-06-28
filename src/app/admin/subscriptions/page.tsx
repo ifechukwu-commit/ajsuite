@@ -33,7 +33,7 @@ export default function AdminSubscriptionsPage() {
             <div key={u.id} className="flex flex-col sm:flex-row sm:items-center gap-2 px-5 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium break-words" style={{ color: 'var(--text-primary)' }}>{u.firm_name || u.full_name || u.email}</p>
-                <p className="text-xs mt-0.5 break-words" style={{ color: 'var(--text-muted)' }}>{u.email} · {u.plan}</p>
+                <p className="text-xs mt-0.5 break-words" style={{ color: 'var(--text-muted)' }}>{u.email}, {u.plan}</p>
               </div>
               <span className="text-xs font-bold uppercase tracking-wide px-2 py-1 rounded flex-shrink-0 self-start break-words"
                 style={{ background: isActive(u) ? '#D8F3DC' : '#FEE2E2', color: isActive(u) ? '#2D6A4F' : '#9B1C1C', fontSize: '9px' }}>

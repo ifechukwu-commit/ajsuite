@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     if (tasks && tasks.length > 0) {
       content += `TASKS\n\n`
       tasks.forEach(t => {
-        content += `[${t.status === 'Done' ? 'x' : ' '}] ${t.title}${t.due_date ? ` — due ${new Date(t.due_date).toLocaleDateString('en-GB')}` : ''}\n`
+        content += `[${t.status === 'Approved' ? 'x' : ' '}] ${t.title} (${t.status})${t.due_date ? ` — due ${new Date(t.due_date).toLocaleDateString('en-GB')}` : ''}\n`
       })
       content += `\n${divider}\n\n`
     }

@@ -19,6 +19,7 @@ export interface User {
   state: string | null
   workspace_type: 'solo' | 'chamber' | null
   last_review_prompt_at: string | null
+  onboarding_completed: boolean
   storage_used_bytes: number
   created_at: string
 }
@@ -61,8 +62,13 @@ export interface Task {
   title: string
   due_date: string | null
   priority: 'High' | 'Medium' | 'Low'
-  status: 'Pending' | 'Done'
+  status: 'Pending' | 'In Progress' | 'Submitted' | 'Approved' | 'Needs Revision'
   assigned_to: string | null
+  submission_note: string | null
+  submission_document_id: string | null
+  submitted_at: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
   created_by: string
   created_at: string
 }
@@ -137,4 +143,33 @@ export interface TeamInvite {
   name?: string
   role: 'owner' | 'member'
   created_at: string
+}
+
+export interface CaseMessage {
+  id: string
+  case_id: string
+  user_id: string | null
+  body: string
+  attached_document_id: string | null
+  created_at: string
+}
+
+export interface WorkSession {
+  id: string
+  case_id: string
+  status: 'active' | 'ended'
+  token: string
+  created_by: string | null
+  created_at: string
+  ended_at: string | null
+}
+
+export interface SessionMember {
+  id: string
+  session_id: string
+  user_id: string | null
+  email: string
+  name: string | null
+  joined_at: string | null
+  revoked_at: string | null
 }

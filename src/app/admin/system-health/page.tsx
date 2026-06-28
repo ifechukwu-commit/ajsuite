@@ -58,7 +58,7 @@ export default function AdminSystemHealthPage() {
           ) : (
             <p className="text-xs break-words" style={{ color: '#9B1C1C' }}>{health.error}</p>
           )}
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Last checked: {health.checkedAt ? new Date(health.checkedAt).toLocaleString('en-GB') : '—'}</p>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Last checked: {health.checkedAt ? new Date(health.checkedAt).toLocaleString('en-GB') : 'Never'}</p>
         </div>
       ) : null}
     </div>
